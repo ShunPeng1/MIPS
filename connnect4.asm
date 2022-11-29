@@ -1,10 +1,30 @@
 .data 
 	#board string and size offset
-	board:		.asciiz "          _      ___     ____    _ _     ___      __     ____  \n         / |    |_  )   |__ /   | | |   | __|    / /    |__  | \n         | |     / /     |_ \\   |_  _|  |__ \\   / _ \\     / /  \n         |_|    /___|   |___/     |_|   |___/   \\___/    /_/   \n                                                               \n      |       |       |       |       |       |       |       |\n      |       |       |       |       |       |       |       |\n      |       |       |       |       |       |       |       |\n      |       |       |       |       |       |       |       |\n      |       |       |       |       |       |       |       |\n      |       |       |       |       |       |       |       |\n      |       |       |       |       |       |       |       |\n      |       |       |       |       |       |       |       |\n      |       |       |       |       |       |       |       |\n      |       |       |       |       |       |       |       |\n      |       |       |       |       |       |       |       |\n      |       |       |       |       |       |       |       |\n      |       |       |       |       |       |       |       |\n      |       |       |       |       |       |       |       |\n      |       |       |       |       |       |       |       |\n      |       |       |       |       |       |       |       |\n      |       |       |       |       |       |       |       |\n      |       |       |       |       |       |       |       |\n      |       |       |       |       |       |       |       |\n      |       |       |       |       |       |       |       |\n      |       |       |       |       |       |       |       |\n      |       |       |       |       |       |       |       |\n      |       |       |       |       |       |       |       |\n      |_______|_______|_______|_______|_______|_______|_______|\n                                                               \n                                                               \n"
+	board: 			.asciiz "           _      ___     ____    _ _     ___      __     ____                                     \n          / |    |_  )   |__ /   | | |   | __|    / /    |__  |                                    \n          | |     / /     |_ \\   |_  _|  |__ \\   / _ \\     / /                                     \n          |_|    /___|   |___/     |_|   |___/   \\___/    /_/                                      \n                                                                                                   \n       |       |       |       |       |       |       |       |       .-------------------------. \n       |       |       |       |       |       |       |       |      |         PLAYER X          |\n       |       |       |       |       |       |       |       |      | .-----------------------. |\n       |       |       |       |       |       |       |       |      ||   VIOLATION :  0/3      ||\n       |       |       |       |       |       |       |       |      ||                         ||\n       |       |       |       |       |       |       |       |      ||   UNDO      :  3/3      ||\n       |       |       |       |       |       |       |       |      ||                         ||\n       |       |       |       |       |       |       |       |      ||   LAST MOVE :  ?        ||\n       |       |       |       |       |       |       |       |      | '-----------------------' |\n       |       |       |       |       |       |       |       |       '-------------------------' \n       |       |       |       |       |       |       |       |                                   \n       |       |       |       |       |       |       |       |                                   \n       |       |       |       |       |       |       |       |                                   \n       |       |       |       |       |       |       |       |       .-------------------------. \n       |       |       |       |       |       |       |       |      |         PLAYER 0          |\n       |       |       |       |       |       |       |       |      | .-----------------------. |\n       |       |       |       |       |       |       |       |      ||   VIOLATION :  0/3      ||\n       |       |       |       |       |       |       |       |      ||                         ||\n       |       |       |       |       |       |       |       |      ||   UNDO      :  3/3      ||\n       |       |       |       |       |       |       |       |      ||                         ||\n       |       |       |       |       |       |       |       |      ||   LAST MOVE :  ?        ||\n       |       |       |       |       |       |       |       |      | '-----------------------' |\n       |       |       |       |       |       |       |       |       '-------------------------' \n       |_______|_______|_______|_______|_______|_______|_______|                                   \n                                                                                                   \n                                                                                                   \n"
+    	number_of_element:	.word 0
+    	
+	#offsets
+	initial_offset:		.word 	611 #500 + 11
+	row_offset:		.word 	400
+	line_offset:		.word 	100
+	column_offset:		.word 	8
 	
-	initial_offset:	.word 	394
-	row_offset:	.word 	256
-	column_offset:	.word 	8
+	# char position of the board
+	x_violation_index:	.word 	888
+	x_undo_index:		.word 	1088
+	x_last_move_index:	.word 	1288
+	
+	o_violation_index:	.word 	2188
+	o_undo_index:		.word 	2388
+	o_last_move_index:	.word 	2588
+	
+	player_turn_index:	.word 	3050
+
+	#phase string
+	phase_x_turn: 		.asciiz "=======================================[ PLAYER'S X TURN ]========================================="
+	phase_o_turn:		.asciiz "=======================================[ PLAYER'S 0 TURN ]========================================="
+	phase_game_over:		.asciiz "=======================================[    GAME OVER!   ]========================================="
+	
 	
 	# pair of row-column vector 
 	row_vector:	.word	0,	0,	1,	-1,	1,	-1,	-1,	1
@@ -12,24 +32,30 @@
 	
 	
 	#menu string
-	welcome: 	.asciiz "               WELCOME TO                        \n  ______    ______   __    __  __    __  ________   ______  ________        __    __ \n /      \\  /      \\ |  \\  |  \\|  \\  |  \\|        \\ /      \\|        \\      |  \\  |  \\\n|  $$$$$$\\|  $$$$$$\\| $$\\ | $$| $$\\ | $$| $$$$$$$$|  $$$$$$\\\\$$$$$$$$      | $$  | $$\n| $$   \\$$| $$  | $$| $$$\\| $$| $$$\\| $$| $$__    | $$   \\$$  | $$         | $$__| $$\n| $$      | $$  | $$| $$$$\\ $$| $$$$\\ $$| $$  \\   | $$        | $$         | $$    $$\n| $$   __ | $$  | $$| $$\\$$ $$| $$\\$$ $$| $$$$$   | $$   __   | $$          \\$$$$$$$$\n| $$__/  \\| $$__/ $$| $$ \\$$$$| $$ \\$$$$| $$_____ | $$__/  \\  | $$               | $$\n \\$$    $$ \\$$    $$| $$  \\$$$| $$  \\$$$| $$     \\ \\$$    $$  | $$               | $$\n  \\$$$$$$   \\$$$$$$  \\$$   \\$$ \\$$   \\$$ \\$$$$$$$$  \\$$$$$$    \\$$                \\$$\n\n                                            by BANH TAN THUAN - 2153011\n"
+	welcome: 	.asciiz "                    WELCOME TO                        \n      ______    ______   __    __  __    __  ________   ______  ________        __    __ \n     /      \\  /      \\ |  \\  |  \\|  \\  |  \\|        \\ /      \\|        \\      |  \\  |  \\\n    |  $$$$$$\\|  $$$$$$\\| $$\\ | $$| $$\\ | $$| $$$$$$$$|  $$$$$$\\\\$$$$$$$$      | $$  | $$\n    | $$   \\$$| $$  | $$| $$$\\| $$| $$$\\| $$| $$__    | $$   \\$$  | $$         | $$__| $$\n    | $$      | $$  | $$| $$$$\\ $$| $$$$\\ $$| $$  \\   | $$        | $$         | $$    $$\n    | $$   __ | $$  | $$| $$\\$$ $$| $$\\$$ $$| $$$$$   | $$   __   | $$          \\$$$$$$$$\n    | $$__/  \\| $$__/ $$| $$ \\$$$$| $$ \\$$$$| $$_____ | $$__/  \\  | $$               | $$\n     \\$$    $$ \\$$    $$| $$  \\$$$| $$  \\$$$| $$     \\ \\$$    $$  | $$               | $$\n      \\$$$$$$   \\$$$$$$  \\$$   \\$$ \\$$   \\$$ \\$$$$$$$$  \\$$$$$$    \\$$                \\$$\n\n                                            by BANH TAN THUAN - 2153011\n"
 	menu_choice: 	.asciiz "\n\n   .---------------.              .---------------. \n  | .-------------. |            | .-------------. |\n  | |  1. Start   | |            | |  2. Guide   | |\n  | '-------------' |            | '-------------' |\n   '---------------'              '---------------' \n\n"
 	menu_error_1_2:	.asciiz "\nTHE CHOICE YOU'VE ENTERED IS NOT IN THE SPECIFIED RANGE (1-2). PLEASE ENTER THE RIGHT CHOICE: "
 
-
+	#commend
 	X0:		.asciiz "X0"
-	x_input:	.asciiz "\nX TURN'S : "
-	o_input:	.asciiz "\nO TURN'S : "
-        turn_error_1_7:	.asciiz "\nTHE CHOICE YOU'VE ENTERED IS NOT IN THE SLOT RANGE (1-7). PLEASE ENTER THE RIGHT CHOICE: "
-	occupied:	.asciiz "\NTHE COLUMN IS FULL, PLEASE ENTER OTHER COLUMN:"
-	  	
+	player_input:	.asciiz "\nPRESS THE COLUMN INDEX (1-7) YOU WANT TO DROP : "
+        undo_success:	.asciiz "\nYOU HAVE SUCCESSFULLY UNDO, PRESS THE COLUMN INDEX (1-7) YOU WANT TO DROP : "
+        turn_error_1_7:	.asciiz "\nWARNING: YOU HAVE BEEN GIVEN A MARK FOR VIOLATING (3 TIMES = LOSE)\nTHE CHOICE YOU'VE ENTERED IS NOT IN THE SLOT RANGE (1-7). PLEASE ENTER THE RIGHT CHOICE: "
+	occupied:	.asciiz "\nWARNING: YOU HAVE BEEN GIVEN A MARK FOR VIOLATING (3 TIMES = LOSE)\nTHE COLUMN IS FULL, PLEASE ENTER OTHER COLUMN:"
+	violation_warn:	.asciiz "WARNING: YOU HAVE BEEN GIVEN A MARK FOR VIOLATING (3 TIMES VIOLATION = LOSE!)\n This message was pop up to prevent multiple character pressed"
+	undo_ask:		.asciiz "\nYOU DO WISH TO UNDO YOUR MOVE (PRESS Y) OR ANY OTHER BUTTON TO CONTINUE ? "
+	  	 	 	 	
 	# win_menu string
-	x_won:	.asciiz "X WON !"
-	o_won:	.asciiz "O WON !"
-	
-	
+	x_won_connect_4:	.asciiz "\nPLAYER X HAS CONNECTED 4 PIECES, PLAYER X WON !"
+	o_won_connect_4:	.asciiz "\nPLAYER 0 HAS CONNECTED 4 PIECES, PLAYER 0 WON !"
+	x_won_o_violate:	.asciiz "\nPLAYER 0 HAS VIOLATED 3 TIMES, PLAYER X WON !"
+	o_won_x_violate:	.asciiz "\nPLAYER X HAS VIOLATED 3 TIMES, PLAYER 0 WON !"	
+	draw:		.asciiz "\nTHE BOARD IS FULLY FILLED, GAME DRAW!"
+
+
+	# line!
 	new_page:        .asciiz "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-	endl:	.asciiz "\n"
+	endl:		.asciiz "\n"
 	
 	
 	
@@ -49,6 +75,7 @@ start_menu: #pribt start menu and
 	li $v0, 4
 	la $a0, menu_choice
 	syscall	
+	
 	
 
 check_read_menu: # Read the player's input and also check if it's valid.
@@ -81,13 +108,19 @@ menu_transition: #take a3 as parameter to transition to corrent scene
 tutorial:
 	jal print_board
 	
-	addi $a3, $0, 3
-	addi $a2, $0, 6
-	jal insert	
 	
-	jal print_board
+	li $v0, 55
+	la $a0, board
+	syscall
+	
+	
+	
 	
 	j quit	
+	
+init_game:
+	
+
 	
 game_loop: # a1 = case
 	#reset variable
@@ -96,23 +129,27 @@ game_loop: # a1 = case
 	
 	jal print_board 
 	
-	beq $a1, 1 , print_x_input
-	beq $a1, 2 , print_o_input
+	#print phase depend on s5
+	jal print_phase
+	
+	#print comment
+	beq $a1, 1 , print_player_input
+	beq $a1, 2 , print_undo_success
 	beq $a1, 3 , print_turn_error_1_7
 	beq $a1, 4 , print_occupied
 	
-	print_x_input: 		
+	print_player_input: 		
 		li $v0, 4
-		la $a0, x_input
+		la $a0, player_input
 		syscall
 		j game_loop_print_break
 		
-	print_o_input: 		
+	print_undo_success:
 		li $v0, 4
-		la $a0, o_input
+		la $a0, undo_success
 		syscall
 		j game_loop_print_break
-	
+		
 	print_turn_error_1_7: 		
 		li $v0, 4
 		la $a0, turn_error_1_7
@@ -131,23 +168,30 @@ game_loop: # a1 = case
 	li $v0, 12			
 	syscall	
 	
-	# assuming wrong player input and check it
-	addi $a1, $0, 3
+	# check player input, if violate check the player violation marks and decide to end or loop
+	addi $a1, $0, 3 #assuming the player violated
 	
-	blt $v0, '1', game_loop
-	bgt $v0, '7', game_loop
+	blt $v0, '1', game_loop_is_violate
+	bgt $v0, '7', game_loop_is_violate
+	j  game_loop_no_violate
 	
+	game_loop_is_violate:# the player have violated
 	
-	#check occuptation by assuming fulled column
-	add $a1, $0, 4
+		jal player_violate # return v1 = 0 is violate and require to input again, v1 = 1 is violate over 3 times and lose
+	
+		beq $v1, 1 , win_menu
+		beq $v1, 0, game_loop
+		
+	game_loop_no_violate:
+	#check occuptation
+	add $a1, $0, 4 #assumming filled column
 	addi $a3, $v0, -48 #change char to int
 	
 	addi $a2, $0, 1
 	jal calculate_coordinate # return v1 is the array index
 	
-	
 	lb $t1,  board+0($v1)
-	bne $t1, ' ', game_loop
+	bne $t1, ' ', game_loop_is_violate #we goto is violate to calculate violate and return game_loop with a3 = 4
 	
 	#not fulled column so we find the empty slot on top of stack
 	addi $a2, $0, 7
@@ -168,12 +212,27 @@ game_loop: # a1 = case
 	jal insert
 	
 	jal check_winning #return v1 = 1 X is wining, = 0 is not and continue 
-	
 	beq $v1, 1, win_menu
 	
-
+	#check for fully filled
+	lw $v1, number_of_element
+	addi $v1, $v1, 1 
+	sw $v1, number_of_element
+	
+	add $a1, $0, 5 # assuming all columns are filled
+	beq $v1, 42, win_menu
+	
+	
+	#check undo
+	jal check_undo # v1 = 1 if undo , else v1 = 0 
+	
+	#assume successfully undo
+	addi $a1, $0, 2
+	beq $v1, 1, game_loop
+		
+	#prepare for next turn
 	jal change_player
-	move $a1, $s5
+	addi $a1, $0, 1 # receive input
 	
 	j game_loop
 
@@ -253,20 +312,15 @@ check_winning: # a2 = row_index(1-6) , a3 = column index (1-7) .
 			
 		done_check_2_vector:
 		
-		
-		li $v0, 4
-		la $a0, endl
-		syscall
-		
-		li $v0, 1
-		addi $a0, $t9, 0
-		syscall
 		#now we check if t0 >=4 , if it is , we jump return , else we continue 
 	
 		blt $t9, 4, check_vector #now we check if t9 <4 , if it true we loop the vector again
 		
 		#it is connected 4 so we return v1 = 1 (win)
 		addi $v1, $0, 1	
+	
+		move $a2, $t2 #assign back the input coordinate
+		move $a3, $t3
 	
 		lw $ra, 0($sp)
 		addi $sp, $sp, 4
@@ -276,6 +330,9 @@ check_winning: # a2 = row_index(1-6) , a3 = column index (1-7) .
 	end_check_vector:
 	
 	addi $v1, $0, 0
+		
+	move $a2, $t2 #assign back the input coordinate
+	move $a3, $t3
 		
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
@@ -289,30 +346,61 @@ win_menu: # a1 = case
 	
 	jal print_board 
 	
-	beq $s5, 1 , print_x_won
-	beq $s5, 2 , print_o_won
-
-	print_x_won: 		
-		li $v0, 4
-		la $a0, x_won
-		syscall
-		j win_menu_print_break
-		
-	print_o_won: 		
-		li $v0, 4
-		la $a0, o_won
-		syscall
-		j win_menu_print_break
 	
-	win_menu_print_break:
+	li $v0, 4
+	la $a0, phase_game_over
+	syscall
+	
+	beq $a1, 3, win_by_violate
+	beq $a1, 5, print_draw
+	
+	beq $s5, 1 , print_x_won_connect_4
+	beq $s5, 2 , print_o_won_connect_4
+	
+	#win by connect 4
+	print_x_won_connect_4: 		
+		li $v0, 4
+		la $a0, x_won_connect_4
+		syscall
+		j win_menu_break
+		
+	print_o_won_connect_4: 		
+		li $v0, 4
+		la $a0, o_won_connect_4
+		syscall
+		j win_menu_break
+	
+	win_by_violate:
+	beq $s5, 1 , print_o_won_x_violate
+	beq $s5, 2 , print_x_won_o_violate
+	
+	print_x_won_o_violate: 		
+		li $v0, 4
+		la $a0, x_won_o_violate
+		syscall
+		j win_menu_break
+		
+	print_o_won_x_violate: 		
+		li $v0, 4
+		la $a0, o_won_x_violate
+		syscall
+		j win_menu_break
+	
+	print_draw: 		
+		li $v0, 4
+		la $a0, draw
+		syscall
+		j win_menu_break
+	
+	
+	win_menu_break:
 	
 	#receive input	
 	li $v0, 12			
 	syscall	
 	
 	j quit
-
-
+	
 
 
 calculate_coordinate:  # a2 = row_index(1-6) , a3 = column index (1-7)  return v1 = board index of the input coordinate 
@@ -348,10 +436,201 @@ calculate_coordinate:  # a2 = row_index(1-6) , a3 = column index (1-7)  return v
 	
 	jr $ra
 
+print_phase:
+
+	beq $s5, 1, print_phase_x_turn
+	beq $s5, 2, print_phase_o_turn
+	
+	print_phase_x_turn:
+		li $v0, 4
+		la $a0, phase_x_turn
+		syscall
+		j print_phase_break
+	
+	print_phase_o_turn:
+		li $v0, 4
+		la $a0, phase_o_turn
+		syscall
+		j print_phase_break
+	
+	print_phase_break:
+	
+	jr $ra
+
+
+player_violate: #return v1 = 3 if violated, and decrease 	
+	
+	addi $sp, $sp, -16
+	sw $ra, 0($sp)
+	sw $t0, 4($sp)
+	sw $t1, 8($sp)
+	sw $a1, 	12($sp)
+
+	
+
+	beq $s5, 1 , player_violate_x
+	beq $s5, 2 , player_violate_o
+	
+	
+	player_violate_x:
+		lw $t0, x_violation_index 
+		lb $t1, board($t0)
+		
+		beq $t1, '3', player_violate_lose # player x have violate 3 times
+		
+		addi $t1, $t1, 1
+		sb $t1, board($t0) #increase the violation score
+		j player_violate_break
+	
+	player_violate_o:
+		lw $t0, o_violation_index 
+		lb $t1, board($t0)
+		
+		beq $t1, '3', player_violate_lose # player 0 have violate 3 times
+		
+		addi $t1, $t1, 1
+		sb $t1, board($t0)#increase the violation score
+		j player_violate_break
+		
+		
+	player_violate_break:
+	addi $v1, $0, 0
+	
+	#warning mips menu
+	li $v0, 55
+	la $a0, violation_warn
+	li $a1, 3
+	syscall
+	
+	lw $ra, 0($sp)
+	lw $t0, 4($sp)
+	lw $t1, 8($sp)
+	lw $a1, 12($sp)
+	addi $sp, $sp, 16
+	
+	jr $ra
+
+	player_violate_lose:
+	addi $v1, $0, 1
+	
+	lw $ra, 0($sp)
+	lw $t0, 4($sp)
+	lw $t1, 8($sp)
+	lw $a1, 12($sp)
+	addi $sp, $sp, 16
+	
+	jr $ra
+
+
+check_undo: # return v1 = 1 if undo, else v1 = 0 so no 
+	addi $sp, $sp, -24
+	sw $ra, 0($sp)
+	sw $t0, 4($sp)
+	sw $t1, 8($sp)
+	sw $t2, 12($sp)
+	sw $t3, 16($sp)
+	sw $a1, 	20($sp)
+
+	# assump no undo
+	
+	beq $s5, 1 , check_undo_x
+	beq $s5, 2 , check_undo_o
+	
+	check_undo_x:
+		lw $t0, x_undo_index 
+		lb $t1, board($t0)
+		
+		beq $t1, '0', check_undo_false # player x have used undo 3 times
+		
+		jal print_board
+		jal print_phase
+		
+		li $v0, 4
+		la $a0, undo_ask
+		syscall
+		
+		#receive input	
+		li $v0, 12			
+		syscall	
+		
+		bne $v0, 'Y', check_undo_false 
+
+		addi $t1, $t1, -1
+		sb $t1, board($t0) #decrease x undo moves
+		
+		jal clear_slot
+		
+		lw $t2, x_last_move_index 
+		addi $t1, $0 ,63 # 63 is character '?'
+		sb $t1, board($t2)
+		
+		j check_undo_true
+	
+	check_undo_o:
+		lw $t0, o_undo_index 
+		lb $t1, board($t0)
+		
+		beq $t1, '0', check_undo_false # player o have used undo 3 times
+		
+		jal print_board
+		jal print_phase
+		
+		li $v0, 4
+		la $a0, undo_ask
+		syscall
+		
+		#receive input	
+		li $v0, 12			
+		syscall	
+		
+		bne $v0, 'Y', check_undo_false 
+		
+		addi $t1, $t1, -1
+		sb $t1, board($t0) #decrease o undo moves
+		
+		jal clear_slot
+		
+		lw $t2, o_last_move_index 
+		addi $t1, $0 ,63 # 63 is character '?'
+		sb $t1, board($t2)
+		
+		j check_undo_true
+		
+		
+	check_undo_false:
+	li $v1, 0
+
+	lw $ra, 0($sp)
+	lw $t0, 4($sp)
+	lw $t1, 8($sp)
+	lw $t2, 12($sp)
+	lw $t3, 16($sp)
+	lw $a1, 	20($sp)
+	addi $sp, $sp, 24
+	
+	jr $ra
+
+	check_undo_true:
+	li $v1, 1
+
+	lw $ra, 0($sp)
+	lw $t0, 4($sp)
+	lw $t1, 8($sp)
+	lw $t2, 12($sp)
+	lw $t3, 16($sp)
+	lw $a1, 	20($sp)
+	addi $sp, $sp, 24
+	
+	jr $ra
+	
+
 change_player:
+
+	# get index of the board string to change player
 
 	beq $s5, 1 , change_player_to_o
 	beq $s5, 2 , change_player_to_x
+	
 	
 	change_player_to_o:
 		addi $s5, $0, 2
@@ -362,6 +641,7 @@ change_player:
 		j change_player_break
 		
 	change_player_break:
+	
 	jr $ra
 
 print_board: # the board is just a very long string
@@ -387,6 +667,13 @@ insert: #  a2 = row_index(1-6) , a3 = column index (1-7)  .
 	
 	jal calculate_coordinate
 	
+	
+	#line offset
+	lw $t7, line_offset 
+	add $t6 , $v1, $t7 # bottom line
+	sub $t7 , $v1, $t7 # top line
+	 
+	
 	# cases
 	beq $s5, 1, insert_x
 	beq $s5, 2, insert_o
@@ -399,10 +686,15 @@ insert: #  a2 = row_index(1-6) , a3 = column index (1-7)  .
 		
 		#draw X shape
 		sb $t0, board+0($v1)
-		sb $t2, board+-65($v1)
-		sb $t1, board+-63($v1)
-		sb $t1, board+63($v1)
-		sb $t2, board+65($v1)
+		sb $t2, board+-1($t7)
+		sb $t1, board+1($t7)
+		sb $t1, board+-1($t6)
+		sb $t2, board+1($t6)
+		
+		#save last move index
+		lw $t0, x_last_move_index 
+		addi $t1, $a3 , 48 #convert from a3 column int to char
+		sb $t1, board($t0)
 		
 		j insert_return
 		
@@ -413,17 +705,22 @@ insert: #  a2 = row_index(1-6) , a3 = column index (1-7)  .
 		addi $t1, $0, 48 # t1 = 48 is ascii for 'zero'
 		
 		#draw 0 shape	
-		sb $t0,  board+-65($v1)
-		sb $t0,  board+-64($v1)
-		sb $t0,  board+-63($v1)
+		sb $t0,  board+-1($t7)
+		sb $t0,  board+0($t7)
+		sb $t0,  board+1($t7)
 		sb $t0,  board+-2($v1)
 		sb $t0,  board+-1($v1)
 		sb $t1,  board+0($v1)
 		sb $t0,  board+1($v1)
 		sb $t0,  board+2($v1)
-		sb $t0,  board+63($v1)
-		sb $t0,  board+64($v1)
-		sb $t0,  board+65($v1)
+		sb $t0,  board+-1($t6)
+		sb $t0,  board+0($t6)
+		sb $t0,  board+1($t6)
+		
+		#save last move index
+		lw $t0, o_last_move_index 
+		addi $t1, $a3 , 48 #convert from a3 column int to char
+		sb $t1, board($t0)
 		
 		j insert_return
 	
@@ -444,14 +741,20 @@ clear_slot:
 	jal calculate_coordinate
 	
 	# t0 = 40 is ascii for 'space'
-	addi $t0, $0, 40
+	addi $t0, $0, 32
+	
+	#line offset
+	lw $t7, line_offset 
+	add $t6 , $v1, $t7 # bottom line
+	sub $t7 , $v1, $t7 # top line
+	 
 
 	#draw space 3x5	
-	sb $t0,  board+-66($v1)
-	sb $t0,  board+-65($v1)
-	sb $t0,  board+-64($v1)	
-	sb $t0,  board+-63($v1)
-	sb $t0,  board+-62($v1)
+	sb $t0,  board+-2($t6)
+	sb $t0,  board+-1($t6)
+	sb $t0,  board+-0($t6)	
+	sb $t0,  board+ 1($t6)
+	sb $t0,  board+ 2($t6)
 		
 	sb $t0,  board+-2($v1)
 	sb $t0,  board+-1($v1)
@@ -459,11 +762,11 @@ clear_slot:
 	sb $t0,  board+1($v1)
 	sb $t0,  board+2($v1)
 		
-	sb $t0,  board+63($v1)
-	sb $t0,  board+63($v1)
-	sb $t0,  board+64($v1)	
-	sb $t0,  board+65($v1)
-	sb $t0,  board+66($v1)
+	sb $t0,  board+-2($t7)
+	sb $t0,  board+-1($t7)
+	sb $t0,  board+0($t7)	
+	sb $t0,  board+1($t7)
+	sb $t0,  board+2($t7)
 
 
 	lw $ra, 0($sp)
@@ -478,7 +781,6 @@ flush_console: # Use to push all printed messages out of the console space.
 	syscall
 	jr $ra
 	
-
 
 quit:
 	li $v0, 10
