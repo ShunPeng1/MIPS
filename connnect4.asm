@@ -18,7 +18,18 @@
 	o_undo_index:		.word 	2388
 	o_last_move_index:	.word 	2588
 	
-	player_turn_index:	.word 	3050
+	# pair of row-column vector 
+	row_vector:	.word	0,	0,	1,	-1,	1,	-1,	-1,	1
+	column_vector:	.word	1,	-1,	1,	-1,	0,	0,	1,	-1
+	
+	# tutotail string
+	tutorial_page_1:		.asciiz "           _      ___     ____    _ _     ___      __     ____                                               \n          / |    |_  )   |__ /   | | |   | __|    / /    |__  |        .-----------------------------------. \n          | |     / /     |_ \\   |_  _|  |__ \\   / _ \\     / /        |                RULES                |\n          |_|    /___|   |___/     |_|   |___/   \\___/    /_/         | .---------------------------------. |\n                                                                      ||     The game is played with a     ||\n       |       |       |       |       |       |       |       |      ||   seven-column and six-row grid,  ||\n       |       |       |       |       |       |       |       |      ||  which is arranged upright. The   ||\n       |       |       |       |       |       |       |       |      ||    starting player is randomly    ||\n       |       |       |       |       |       |       |       |      ||  chosen, pick a game piece color  ||\n       |       |       |       |  @@@  |       |       |       |      ||   (X or 0) and can place a piece  ||\n       |       |       |       | @@0@@ |       |       |       |      ||  in any column. Each player then  ||\n       |       |       |       |  @@@  |       |       |       |      || alternately takes a turn placing  ||\n       |       |       |       |       |       |       |       |      ||   a piece in any column that is   ||\n       |       |       |       |  \\ /  |       |       |       |      || not already full. The piece fall  ||\n       |       |       |       |   X   |       |       |       |      ||   straight down, occupying the    ||\n       |       |       |       |  / \\  |       |       |       |      ||    lowest available spot within   ||\n       |       |       |       |       |       |       |       |      ||    the column or be stopped by    ||\n       |       |       |  @@@  |  @@@  |  \\ /  |       |       |      ||  another piece. The aim is to be  ||\n       |       |       | @@0@@ | @@0@@ |   X   |       |       |      ||  the first of the two players to  ||\n       |       |       |  @@@  |  @@@  |  / \\  |       |       |      || connect four pieces of the same   ||\n       |       |       |       |       |       |       |       |      ||  colour vertically, horizontally  ||\n       |       |  \\ /  |  @@@  |  @@@  |  \\ /  |  \\ /  |       |      ||   or diagonally (an example is    ||\n       |       |   X   | @@0@@ | @@0@@ |   X   |   X   |       |      || shown here). If each cell of the  ||\n       |       |  / \\  |  @@@  |  @@@  |  / \\  |  / \\  |       |      ||    grid is filled and no player   ||\n       |       |       |       |       |       |       |       |      ||     has already connected four    ||\n       |  \\ /  |  @@@  |  @@@  |  \\ /  |  \\ /  |  @@@  |  \\ /  |      ||     pieces, the game ends in a    ||\n       |   X   | @@0@@ | @@0@@ |   X   |   X   | @@0@@ |   X   |      ||      draw, so no player wins.     ||\n       |  / \\  |  @@@  |  @@@  |  / \\  |  / \\  |  @@@  |  / \\  |      | '---------------------------------' |\n       |_______|_______|_______|_______|_______|_______|_______|       '-----------------------------------' \n\n\n"
+	tutorial_page_2:		.asciiz "           _      ___     ____    _ _     ___      __     ____                                               \n          / |    |_  )   |__ /   | | |   | __|    / /    |__  |        .-----------------------------------. \n          | |     / /     |_ \\   |_  _|  |__ \\   / _ \\     / /        |                RULES                |\n          |_|    /___|   |___/     |_|   |___/   \\___/    /_/         | .---------------------------------. |\n                                                                      ||   Particularly, the player have   ||\n       |       |       |       |       |       |       |       |      ||    to input in the terminal the   ||\n       |       |       |       |       |       |       |       |      ||  character 1 to 7 to choose the   ||\n       |       |       |       |       |       |       |       |      ||  desired column. Moreover, each   ||\n       |       |       |       |       |       |       |       |      ||  player can undo 3 times in the   ||\n       |       |       |       |  @@@  |       |       |       |      ||  whole game, which is asked when  ||\n       |       |       |       | @@0@@ |       |       |       |      || that player have select a column  ||\n       |       |       |       |  @@@  |       |       |       |      ||   and before the opponent turn.   ||\n       |       |       |       |       |       |       |       |      ||                                   ||\n       |       |       |       |  \\ /  |       |       |       |      ||  However, there are also 3 marks  ||\n       |       |       |       |   X   |       |       |       |      ||  for violation for each players.  ||\n       |       |       |       |  / \\  |       |       |       |      ||  Violation is count when placing  ||\n       |       |       |       |       |       |       |       |      ||    a piece at an inappropiate     ||\n       |       |       |  @@@  |  @@@  |  \\ /  |       |       |      ||   column (such as out of range    ||\n       |       |       | @@0@@ | @@0@@ |   X   |       |       |      ||  fully filled column), and need   ||\n       |       |       |  @@@  |  @@@  |  / \\  |       |       |      || to restart the move. The player   ||\n       |       |       |       |       |       |       |       |      ||   who violate more than 3 times   ||\n       |       |  \\ /  |  @@@  |  @@@  |  \\ /  |  \\ /  |       |      || who immediately lose the game !   ||\n       |       |   X   | @@0@@ | @@0@@ |   X   |   X   |       |      ||                                   ||\n       |       |  / \\  |  @@@  |  @@@  |  / \\  |  / \\  |       |      ||   There will be a board here to   ||\n       |       |       |       |       |       |       |       |      ||    keep track of all the marks    ||\n       |  \\ /  |  @@@  |  @@@  |  \\ /  |  \\ /  |  @@@  |  \\ /  |      ||                                   ||\n       |   X   | @@0@@ | @@0@@ |   X   |   X   | @@0@@ |   X   |      ||      GOOD LUCK AND HAVE FUN!      ||\n       |  / \\  |  @@@  |  @@@  |  / \\  |  / \\  |  @@@  |  / \\  |      | '---------------------------------' |\n       |_______|_______|_______|_______|_______|_______|_______|       '-----------------------------------' \n\n\n"
+
+	#start announcement
+	tell_game_start:		.asciiz "-----------------------   GAME START!   -----------------------"
+	start_as_x:		.asciiz "\nX PLAYER GOES FIRST"
+	start_as_0:		.asciiz "\n0 PLAYER GOES FIRST"
 
 	#phase string
 	phase_x_turn: 		.asciiz "=======================================[ PLAYER'S X TURN ]========================================="
@@ -26,44 +37,41 @@
 	phase_game_over:		.asciiz "=======================================[    GAME OVER!   ]========================================="
 	
 	
-	# pair of row-column vector 
-	row_vector:	.word	0,	0,	1,	-1,	1,	-1,	-1,	1
-	column_vector:	.word	1,	-1,	1,	-1,	0,	0,	1,	-1
-	
-	
 	#menu string
-	welcome: 	.asciiz "                    WELCOME TO                        \n      ______    ______   __    __  __    __  ________   ______  ________        __    __ \n     /      \\  /      \\ |  \\  |  \\|  \\  |  \\|        \\ /      \\|        \\      |  \\  |  \\\n    |  $$$$$$\\|  $$$$$$\\| $$\\ | $$| $$\\ | $$| $$$$$$$$|  $$$$$$\\\\$$$$$$$$      | $$  | $$\n    | $$   \\$$| $$  | $$| $$$\\| $$| $$$\\| $$| $$__    | $$   \\$$  | $$         | $$__| $$\n    | $$      | $$  | $$| $$$$\\ $$| $$$$\\ $$| $$  \\   | $$        | $$         | $$    $$\n    | $$   __ | $$  | $$| $$\\$$ $$| $$\\$$ $$| $$$$$   | $$   __   | $$          \\$$$$$$$$\n    | $$__/  \\| $$__/ $$| $$ \\$$$$| $$ \\$$$$| $$_____ | $$__/  \\  | $$               | $$\n     \\$$    $$ \\$$    $$| $$  \\$$$| $$  \\$$$| $$     \\ \\$$    $$  | $$               | $$\n      \\$$$$$$   \\$$$$$$  \\$$   \\$$ \\$$   \\$$ \\$$$$$$$$  \\$$$$$$    \\$$                \\$$\n\n                                            by BANH TAN THUAN - 2153011\n"
-	menu_choice: 	.asciiz "\n\n   .---------------.              .---------------. \n  | .-------------. |            | .-------------. |\n  | |  1. Start   | |            | |  2. Guide   | |\n  | '-------------' |            | '-------------' |\n   '---------------'              '---------------' \n\n"
-	menu_error_1_2:	.asciiz "\nTHE CHOICE YOU'VE ENTERED IS NOT IN THE SPECIFIED RANGE (1-2). PLEASE ENTER THE RIGHT CHOICE: "
-
+	welcome: 		.asciiz "                    WELCOME TO                        \n      ______    ______   __    __  __    __  ________   ______  ________        __    __ \n     /      \\  /      \\ |  \\  |  \\|  \\  |  \\|        \\ /      \\|        \\      |  \\  |  \\\n    |  $$$$$$\\|  $$$$$$\\| $$\\ | $$| $$\\ | $$| $$$$$$$$|  $$$$$$\\\\$$$$$$$$      | $$  | $$\n    | $$   \\$$| $$  | $$| $$$\\| $$| $$$\\| $$| $$__    | $$   \\$$  | $$         | $$__| $$\n    | $$      | $$  | $$| $$$$\\ $$| $$$$\\ $$| $$  \\   | $$        | $$         | $$    $$\n    | $$   __ | $$  | $$| $$\\$$ $$| $$\\$$ $$| $$$$$   | $$   __   | $$          \\$$$$$$$$\n    | $$__/  \\| $$__/ $$| $$ \\$$$$| $$ \\$$$$| $$_____ | $$__/  \\  | $$               | $$\n     \\$$    $$ \\$$    $$| $$  \\$$$| $$  \\$$$| $$     \\ \\$$    $$  | $$               | $$\n      \\$$$$$$   \\$$$$$$  \\$$   \\$$ \\$$   \\$$ \\$$$$$$$$  \\$$$$$$    \\$$                \\$$\n\n                                            by BANH TAN THUAN - 2153011\n"
+	menu_choice: 		.asciiz "\n\n   .---------------.              .---------------.               .---------------. \n  | .-------------. |            | .-------------. |             | .-------------. |\n  | |  1. Start   | |            | |  2. Guide   | |             | |  3. Quit    | |\n  | '-------------' |            | '-------------' |             | '-------------' |\n   '---------------'              '---------------'               '---------------' \n\n\n"
+	menu_error:		.asciiz "\nTHE CHOICE YOU'VE ENTERED IS NOT IN THE SPECIFIED RANGE (1-3). PLEASE ENTER THE RIGHT CHOICE: "
+	press_to_continue:	.asciiz "\nPRESS ANYTHING TO CONTINUE"
+	
 	#commend
-	X0:		.asciiz "X0"
-	player_input:	.asciiz "\nPRESS THE COLUMN INDEX (1-7) YOU WANT TO DROP : "
-        undo_success:	.asciiz "\nYOU HAVE SUCCESSFULLY UNDO, PRESS THE COLUMN INDEX (1-7) YOU WANT TO DROP : "
-        turn_error_1_7:	.asciiz "\nWARNING: YOU HAVE BEEN GIVEN A MARK FOR VIOLATING (3 TIMES = LOSE)\nTHE CHOICE YOU'VE ENTERED IS NOT IN THE SLOT RANGE (1-7). PLEASE ENTER THE RIGHT CHOICE: "
-	occupied:	.asciiz "\nWARNING: YOU HAVE BEEN GIVEN A MARK FOR VIOLATING (3 TIMES = LOSE)\nTHE COLUMN IS FULL, PLEASE ENTER OTHER COLUMN:"
-	violation_warn:	.asciiz "WARNING: YOU HAVE BEEN GIVEN A MARK FOR VIOLATING (3 TIMES VIOLATION = LOSE!)\n This message was pop up to prevent multiple character pressed"
+	X0:			.asciiz "X0"
+	player_input:		.asciiz "\nPRESS THE COLUMN INDEX (1-7) YOU WANT TO DROP : "
+        undo_success:		.asciiz "\nYOU HAVE SUCCESSFULLY UNDO, PRESS THE COLUMN INDEX (1-7) YOU WANT TO DROP : "
+        turn_error_1_7:		.asciiz "\nWARNING: YOU HAVE BEEN GIVEN A MARK FOR VIOLATING (3 TIMES = LOSE)\nTHE CHOICE YOU'VE ENTERED IS NOT IN THE SLOT RANGE (1-7). PLEASE ENTER THE RIGHT CHOICE: "
+	occupied:		.asciiz "\nWARNING: YOU HAVE BEEN GIVEN A MARK FOR VIOLATING (3 TIMES = LOSE)\nTHE COLUMN IS FULL, PLEASE ENTER OTHER COLUMN:"
+	violation_warn:		.asciiz "WARNING: YOU HAVE BEEN GIVEN A MARK FOR VIOLATING (3 TIMES VIOLATION = LOSE!)\n This message was pop up to prevent multiple character pressed"
 	undo_ask:		.asciiz "\nYOU DO WISH TO UNDO YOUR MOVE (PRESS Y) OR ANY OTHER BUTTON TO CONTINUE ? "
 	  	 	 	 	
 	# win_menu string
-	x_won_connect_4:	.asciiz "\nPLAYER X HAS CONNECTED 4 PIECES, PLAYER X WON !"
-	o_won_connect_4:	.asciiz "\nPLAYER 0 HAS CONNECTED 4 PIECES, PLAYER 0 WON !"
-	x_won_o_violate:	.asciiz "\nPLAYER 0 HAS VIOLATED 3 TIMES, PLAYER X WON !"
-	o_won_x_violate:	.asciiz "\nPLAYER X HAS VIOLATED 3 TIMES, PLAYER 0 WON !"	
-	draw:		.asciiz "\nTHE BOARD IS FULLY FILLED, GAME DRAW!"
+	tell_game_over:		.asciiz "----------------------  GAME OVER!   ----------------------"
+	x_won_connect_4:		.asciiz "\nPLAYER X HAS CONNECTED 4 PIECES, PLAYER X WON !"
+	o_won_connect_4:		.asciiz "\nPLAYER 0 HAS CONNECTED 4 PIECES, PLAYER 0 WON !"
+	x_won_o_violate:		.asciiz "\nPLAYER 0 HAS VIOLATED 3 TIMES, PLAYER X WON !"
+	o_won_x_violate:		.asciiz "\nPLAYER X HAS VIOLATED 3 TIMES, PLAYER 0 WON !"	
+	draw:			.asciiz "\nTHE BOARD IS FULLY FILLED, GAME DRAW!"
 
 
 	# line!
-	new_page:        .asciiz "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-	endl:		.asciiz "\n"
+	new_page:        	.asciiz "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+	endl:			.asciiz "\n"
 	
 	
 	
 	
 .text
-	#initialize address
 	
-	li $s5 ,  1  # s5 : event controller , 1 : x' turn  , 2 : o' turn  
+	# s5 : the current turn 1 = x player, 2 = 0 player
+	# 
 	
 start_menu: #pribt start menu and 
 	li $v0, 4
@@ -83,8 +91,8 @@ check_read_menu: # Read the player's input and also check if it's valid.
 	syscall
 
 	blt $v0, '1', read_menu_error
-	bgt $v0, '2', read_menu_error
-	add $a3, $v0, $0
+	bgt $v0, '3', read_menu_error
+	add $a1, $v0, $0
 	j menu_transition
 	
 read_menu_error: # In case the player makes error
@@ -97,30 +105,127 @@ read_menu_error: # In case the player makes error
 	la $a0, menu_choice
 	syscall
 	li $v0, 4
-	la $a0, menu_error_1_2
+	la $a0, menu_error
 	syscall
 	j check_read_menu
 
-menu_transition: #take a3 as parameter to transition to corrent scene
-	beq $a3, '1', game_loop
-	beq $a3, '2', tutorial	
-	
+menu_transition: #take a1 as parameter to transition to corrent scene
+	beq $a1, '1', init_game
+	beq $a1, '2', tutorial	
+	beq $a1, '3', quit
 tutorial:
-	jal print_board
+	jal flush_console
 	
+	li $v0, 4
+	la $a0, tutorial_page_1
+	syscall
+		
+	li $v0, 4
+	la $a0, press_to_continue
+	syscall
+
 	
-	li $v0, 55
-	la $a0, board
+	#wait for input
+	li $v0, 12
+	syscall	
+	
+	jal flush_console
+
+	li $v0, 4
+	la $a0, tutorial_page_2
 	syscall
 	
+	li $v0, 4
+	la $a0, press_to_continue
+	syscall
+
 	
+	#wait for input
+	li $v0, 12
+	syscall
 	
-	
-	j quit	
-	
+	j init_game	
 init_game:
 	
+	# reset board
+	li $a2, 0
+	init_game_foreach_row:
+		addi $a2, $a2, 1
+		beq $a2, 7 , init_game_break_row
+		
+		li $a3, 0
+		init_game_foreach_column:
+			addi $a3, $a3, 1
+			beq  $a3, 8, init_game_break_column
+			
+			jal clear_slot
+			
+			j init_game_foreach_column
+			
+		init_game_break_column:
 
+		j init_game_foreach_row
+
+	init_game_break_row:
+	
+	
+	#reset stats
+	lw $t2, x_violation_index 
+	addi $t1, $0 ,48 # 48 is character 'zero'
+	sb $t1, board($t2)
+	
+	lw $t2, x_undo_index 
+	addi $t1, $0 ,51 # 51 is character '3'
+	sb $t1, board($t2)
+	
+	lw $t2, x_last_move_index 
+	addi $t1, $0 ,63 # 63 is character '?'
+	sb $t1, board($t2)
+	
+	lw $t2, o_violation_index 
+	addi $t1, $0 ,48 # 48 is character 'zero'
+	sb $t1, board($t2)
+	
+	lw $t2, o_undo_index 
+	addi $t1, $0 ,51 # 51 is character '3'
+	sb $t1, board($t2)
+	
+	lw $t2, o_last_move_index 
+	addi $t1, $0 ,63 # 63 is character '?'
+	sb $t1, board($t2)
+	
+    	#reset num of element 
+	addi $v0, $0, 0
+	sw $v0, number_of_element
+    	
+    	#random start
+	li $a1, 2  #Here you set $a1 to the max bound.
+    	li $v0, 42  #generates the random number.
+    	syscall
+    	add $a0, $a0, 1  #Here you add the lowest bound
+    	add $s5, $a0, $0
+    	
+    	beq $s5, 1, print_start_as_x
+    	beq $s5, 2, print_start_as_0
+    	print_start_as_x:
+    		la $a1, start_as_x
+    		j init_game_break
+    	
+    	print_start_as_0:
+    		la $a1, start_as_0
+    		j init_game_break
+    	
+
+    	init_game_break:    	
+    	#Dialog
+	li $v0, 59
+	la $a0, tell_game_start
+	syscall
+    	
+    	#start
+    	li $a1, 1
+	j game_loop
+	
 	
 game_loop: # a1 = case
 	#reset variable
@@ -395,11 +500,24 @@ win_menu: # a1 = case
 	
 	win_menu_break:
 	
-	#receive input	
+	#Dialog
+	li $v0, 59
+	move $a1, $a0
+	la $a0, tell_game_over
+	syscall
+		
+	li $v0, 4
+	la $a0, press_to_continue
+	syscall
+
+	
+	#receive input (waiting)
 	li $v0, 12			
 	syscall	
 	
-	j quit
+	
+	
+	j start_menu
 	
 
 
@@ -499,7 +617,7 @@ player_violate: #return v1 = 3 if violated, and decrease
 	#warning mips menu
 	li $v0, 55
 	la $a0, violation_warn
-	li $a1, 3
+	li $a1, 2
 	syscall
 	
 	lw $ra, 0($sp)
