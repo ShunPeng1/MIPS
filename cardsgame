@@ -1,0 +1,1372 @@
+# { box class
+
+box:    .struct
+
+ul:     .byte    0          # upper left
+
+top:    .byte    0
+
+ur:     .byte    0          # upper right
+
+left:   .byte    0
+
+middle: .byte    0
+
+right:  .byte    0
+
+ll:     .byte    0          # lower left
+
+bot:    .byte    0          # bottom
+
+lr:     .byte    0          # lower right
+
+.data
+
+# { card class
+
+card:   .struct
+
+word:   .word 0
+
+x:      .word 0
+
+y:      .word 0
+
+match:  .byte 0
+
+faceup: .byte 0
+
+.byte 0
+
+.byte 0
+
+.data
+
+.align  4
+
+infile: .asciiz “wordfile.txt”
+
+words:  .space  2444  #611*4
+
+.extern state,4
+
+.extern card1,4
+
+.extern card2,4
+
+.extern turns,4
+
+.extern left,4
+
+.extern time,4
+
+.extern n,4
+
+.extern gameState,4
+
+.extern tstart,4
+
+# { instances of box}
+
+boxBlank:
+
+.ascii    ”         ”
+
+boxd:   .byte   201,205,187
+
+.byte   186,32,186
+
+.byte   200,205,188
+
+boxs:   .byte    218,196,191
+
+.byte    179,32,179
+
+.byte    192,196,217
+
+boxw:   .ascii    “¬Þ¬Þ¬Þ”
+
+.ascii    “¬ß ¬à”
+
+.ascii    “¬á¬á¬á”
+
+boxg1:  .ascii    “¬¡¬¡¬¡¬¡ ¬¡¬¡¬¡¬¡”
+
+boxb:   .ascii    “¬Ý¬Ý¬Ý¬Ý ¬Ý¬Ý¬Ý¬Ý”
+
+.extern lfsr,4
+
+#——————————————————————————-
+
+# void box::draw(int x:a0, int y:a1, int w:a2, int h:a3,box *this:s0)
+
+.code
+
+box.draw:
+
+mov     $t9,$a0             # save x for re-use
+
+syscall $xy                 #
+
+lb      $a0,box.ul($s0)
+
+syscall $print_char
+
+lb      $a0,box.top($s0)
+
+mov     $t0,$a2
+
+b       2f
+
+1:  syscall $print_char
+
+addi    $t0,$t0,-1
+
+2:  bgtz    $t0,1b
+
+lb      $a0,box.ur($s0)
+
+syscall $print_char
+
+mov     $a0,$t9
+
+addi    $a1,$a1,1
+
+syscall $xy
+
+b       4f
+
+3:  lb      $a0,box.left($s0)
+
+syscall $print_char
+
+lb      $a0,box.middle($s0)  #
+
+mov     $t0,$a2
+
+b       2f
+
+1:  syscall $print_char
+
+addi    $t0,$t0,-1
+
+2:  bgtz    $t0,1b
+
+lb      $a0,box.right($s0)
+
+syscall $print_char
+
+mov     $a0,$t9
+
+addi    $a1,$a1,1
+
+syscall $xy
+
+addi    $a3,$a3,-1
+
+4:  bgtz    $a3,3b
+
+lb      $a0,box.ll($s0)
+
+syscall $print_char
+
+lb      $a0,box.bot($s0)
+
+mov     $t0,$a2
+
+b       2f
+
+1:  syscall $print_char
+
+addi    $t0,$t0,-1
+
+2:  bgtz    $t0,1b
+
+lb      $a0,box.lr($s0)
+
+syscall $print_char
+
+jr      $ra
+
+#——————————————————————————-
+
+# int random()
+
+# random generator that uses the Galois LFSR PRNG function
+
+random:
+
+li   $v0,0x0d000001
+
+lw   $t0,lfsr($gp)
+
+srl  $t1,$t0,1
+
+andi $t0,$t0,1
+
+beqz $t0,1f
+
+li   $t0,-1
+
+1:  and  $v0,$v0,$t0
+
+xor  $v0,$v0,$t1
+
+sw   $v0,lfsr($gp)
+
+jr   $ra
+
+#——————————————————————————-
+
+#void Fileread(a0: char * filename,a1: char * buffer)
+
+Fileread:
+
+or    $t0,$a1,$0    # save pointer to place to load file
+
+add   $a1,$0,$0
+
+add   $a2,$0,$0
+
+syscall $open
+
+add   $a0,$v0,$0    # save file descriptor
+
+or    $a1,$t0,$0    # recover pointer to buffer
+
+ori   $a2,$0,1      # read a single char at a time
+
+ori   $t1,$0,611    # counter of words
+
+1:  syscall $read       # read a char
+
+lb   $t0,($a1)      # load read char in t3
+
+beqz $t0,2f
+
+beq  $t0,13,1b      # if it’s CR, continue
+
+beq  $t0,10,2f      # if we reached end of line, continue
+
+addi $a1,$a1,1
+
+b    1b
+
+2:  sb   $0,($a1)       # insert end of string
+
+addi $a1,$a1,1
+
+addi $t1,$t1,-1
+
+bnez $t1,1b
+
+syscall $close
+
+jr  $ra
+
+#——————————————————————————-
+
+# void card.card(card * c)
+
+card.draw:
+
+addi    $sp,$sp,-12
+
+sw      $ra,0($sp)     # save return address
+
+sw      $s0,4($sp)
+
+sw      $s1,8($sp)
+
+or      $s1,$0,$a0
+
+lw      $a0,card.x($s1)
+
+lw      $a1,card.y($s1)
+
+ori     $a2,$0,3
+
+ori     $a3,$0,1
+
+lb      $t0,card.match($s1)
+
+beqz    $t0,0f
+
+la      $s0,boxBlank
+
+b       2f
+
+0:  lb      $t1,card.faceup($s1)
+
+bnez    $t1,1f              # draw up
+
+la      $s0,boxd
+
+b       2f
+
+1:  la      $s0,boxs
+
+2:  jalbox.draw
+
+lb      $t0,card.faceup($s1)
+
+beqz    $t0,3f              # for face down, don’t draw word
+
+lw      $a0,card.x($s1)
+
+addi $a0,$a0,1
+
+lw      $a1,card.y($s1)
+
+addi $a1,$a1,1
+
+syscall $xy                 # else, put the word
+
+lw      $t0,card.word($s1)
+
+sll     $t0,$t0,2
+
+la      $t1,words
+
+add     $a0,$t1,$t0
+
+syscall $print_string
+
+3:  lw      $ra,0($sp)
+
+lw      $s0,4($sp)
+
+lw      $s1,8($sp)
+
+add     $sp,$sp,12
+
+jr      $ra
+
+#——————————————————————————-
+
+# void card.card(card * c)
+
+card.card:
+
+addi    $sp,$sp,-4
+
+sw      $ra,0($sp)     # save return address
+
+sw      $0,card.word($a0)
+
+sw      $0,card.x($a0)
+
+sw      $0,card.y($a0)
+
+sb      $0,card.match($a0)
+
+ori     $t0,$0,0
+
+sb      $t0,card.faceup($a0)
+
+lw      $ra,0($sp)
+
+add     $sp,$sp,4
+
+jr  $ra
+
+#——————————————————————————-
+
+# card * card.new()
+
+card.new:
+
+addi    $sp,$sp,-12
+
+sw      $ra,0($sp)      # save return address
+
+sw      $s0,4($sp)
+
+sw      $a0,8($sp)
+
+ori     $a0,$0,16       # reserve space for a card
+
+syscall $malloc
+
+or      $s0,$0,$v0
+
+or      $a0,$0,$v0
+
+jalcard.card
+
+or      $v0,$0,$s0
+
+lw      $ra,0($sp)
+
+lw      $s0,4($sp)
+
+lw      $a0,8($sp)
+
+add     $sp,$sp,12
+
+jr      $ra
+
+#——————————————————————————-
+
+#void Shuffle(card * array[ ]:a0, int N:a1)
+
+Shuffle:
+
+addi    $sp,$sp,-8
+
+sw      $ra,0($sp)     # save return address
+
+sw      $a1,4($sp)
+
+1:  jal     random
+
+div     $v0,$a1
+
+mfhi    $t0
+
+sll     $t0,$t0,2
+
+add     $t0,$t0,$a0
+
+lw      $t2,($t0)
+
+addi    $a1,$a1,-1
+
+sll     $t1,$a1,2
+
+add     $t1,$t1,$a0
+
+lw      $t3,($t1)
+
+lw      $t4,card.word($t2)  # shuffle only the words…
+
+lw      $t5,card.word($t3)
+
+sw      $t5,card.word($t2)
+
+sw      $t4,card.word($t3)
+
+bgtz    $a1,1b
+
+lw      $ra,0($sp)
+
+lw      $a1,4($sp)
+
+add     $sp,$sp,8
+
+jr      $ra
+
+#——————————————————————————-
+
+# void clrscr()
+
+clrscr:
+
+addi    $sp,$sp,-16
+
+sw      $ra,0($sp)     # save return address
+
+sw      $a0,4($sp)
+
+sw      $a1,8($sp)
+
+sw      $v0,12($sp)
+
+ori     $t0,$0,25*80
+
+ori     $a0,$0,32
+
+1:  syscall $print_char
+
+addi    $t0,$t0,-1
+
+bnez    $t0,1b
+
+or      $a0,$0,$0
+
+or      $a1,$0,$0
+
+syscall $xy
+
+lw      $ra,0($sp)
+
+lw      $a0,4($sp)
+
+lw      $a1,8($sp)
+
+lw      $v0,12($sp)
+
+add     $sp,$sp,16
+
+jr      $ra
+
+#——————————————————————————-
+
+.data
+
+prompt: .asciiz    “Please enter the level of difficulty (1-6): ”
+
+mturns: .asciiz    “Turns: ”
+
+mtime:  .asciiz    “Time: ”
+
+mwin0:     .asciiz    “ÉÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ»”
+
+mwin1:  .asciiz “º Congratulations. º”
+
+mwin2:  .asciiz “º     You Win!     º”
+
+mwin3:  .asciiz “ÈÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼”
+
+bttns:  .asciiz “<Exit><New game>”
+
+wid:    .word   0
+
+hei:    .word   0
+
+array:  .word   0   # pointer to start address of array of cards
+
+.data
+
+keyboard:  .struct 0xa0000000   #start from hardware base address
+
+flags:          .byte 0
+
+mask:      .byte 0
+
+.half 0
+
+keypress: .byte 0,0,0
+
+presscon: .byte 0
+
+keydown:   .half 0
+
+shiftdown: .byte 0
+
+downcon:   .byte 0
+
+keyup:          .half 0
+
+upshift:   .byte 0
+
+upcon:          .byte 0
+
+.data
+
+mouse:      .struct  0xa0000018
+
+flags:      .byte 0
+
+mask:       .byte 0
+
+.half 0
+
+.word 0
+
+move:       .word 0,0
+
+down:       .word 0,0
+
+up:         .word 0,0
+
+wheel:      .word 0,0
+
+wheeldown:  .word 0,0
+
+wheelup:    .word 0,0
+
+.data
+
+timer:      .struct 0xa0000050 #start from timer base address
+
+flags:      .byte 0
+
+mask:       .byte 0
+
+.half 0
+
+t1:         .word 0
+
+t2:         .word 0
+
+t3:         .word 0
+
+t4:         .word 0
+
+t5:         .word 0
+
+t6:         .word 0
+
+t7:         .word 0
+
+.code
+
+.globl    main
+
+#——————————————————————————-
+
+# intpollMouse()
+
+pollMouse:
+
+addi    $sp,$sp,-12
+
+sw      $ra,0($sp)     # save return address
+
+sw      $s0,4($sp)
+
+sw      $s1,8($sp)
+
+or      $t1,$0,$0
+
+or      $t2,$0,$0
+
+loop:
+
+la       $a0,keyboard.flags     # hardware address of keyboard flags
+
+addi $a1,$0,1        # 1 byte of data
+
+syscall $IO_read           # read flags
+
+blez $v0,updtim      # branch if no keyboard flags
+
+andi $t0,$v0,1       # flag bit 0
+
+beqz    $t0,updtim
+
+la       $a0,keyboard.keypress  # hardware address of ascii data
+
+addi $a1,$0,1        # 1 byte of data
+
+syscall    $IO_read
+
+beq     $v0,’x,ext
+
+beq     $v0,’X,ext
+
+beq     $v0,’n,nugame
+
+beq     $v0,’N,nugame
+
+updtim:
+
+lw      $t0,time($gp)
+
+beq     $t0,-1,1f
+
+la       $a0,timer.flags
+
+addi $a1,$0,1
+
+syscall $IO_read
+
+blez $v0,1f
+
+move $t0,$v0
+
+addi $t7,$0,1
+
+addi $t8,$0,2
+
+la       $t9,timer.t1
+
+c1: and        $t1,$t0,$t8
+
+beqz $t1,c2
+
+move $a0,$t9
+
+syscall    $IO_read
+
+bne     $t7,1,c2
+
+lw      $t6,time($gp)
+
+addi    $t6,$t6,1
+
+sw      $t6,time($gp)
+
+addi $a0,$0,60
+
+addi $a1,$0,24
+
+syscall    $xy
+
+la      $a0,mtime
+
+syscall    $print_string
+
+lw      $a0,time($gp)
+
+syscall    $print_int
+
+lw      $t6,tstart($gp)
+
+beqz    $t6,c2
+
+sub     $t6,$a0,$t6
+
+blt     $t6,2,c2
+
+lw      $a0,card1($gp)
+
+lw      $s0,card.x($a0)
+
+lw      $s1,card.y($a0)
+
+b       8f
+
+c2:  addi $t7,$t7,1
+
+sll      $t8,$t8,1
+
+addi $t9,$t9,4
+
+andi $t3,$t7,8
+
+beqz $t3,c1
+
+1:  la      $a0,mouse.flags
+
+li      $a1,1
+
+syscall $IO_read
+
+beqz    $v0,loop
+
+move    $t2,$v0
+
+andi    $t0,$t2,1
+
+beqz    $t0,2f
+
+la      $a0,mouse.move
+
+li      $a1,4
+
+syscall $IO_read
+
+2:  andi    $t0,$t2,2
+
+beqz    $t0,3f
+
+la      $a0,mouse.down
+
+li      $a1,4
+
+syscall $IO_read
+
+bnez    $t1,3f
+
+ori     $t1,$t1,1
+
+3:  andi    $t0,$t2,4
+
+beqz    $t0,4f
+
+la      $a0,mouse.up
+
+li      $a1,4
+
+syscall $IO_read
+
+beqz    $t1,4f
+
+ori     $t1,$t1,2
+
+andi    $s0,$v0,0xFFFF
+
+srl     $s1,$v0,16
+
+4:  andi    $t0,$t2,8
+
+beqz    $t0,5f
+
+la      $a0,mouse.wheel
+
+li      $a1,4
+
+syscall $IO_read
+
+5:  andi    $t0,$t2,16
+
+beqz    $t0,6f
+
+la      $a0,mouse.wheeldown
+
+li      $a1,4
+
+syscall $IO_read
+
+6:  andi    $t0,$t2,32
+
+bnez    $t0,7f
+
+la      $a0,mouse.wheelup
+
+li      $a1,4
+
+syscall $IO_read
+
+7:  bne     $t1,3,loop
+
+bne     $s1,24,8f
+
+blt     $s0,25,8f
+
+ble     $s0,30,ext
+
+blt     $s0,35,8f
+
+ble     $s0,44,nugame
+
+b       8f
+
+ext:
+
+li      $t0,1
+
+sw      $t0,gameState($gp)
+
+b       8f
+
+nugame:
+
+li      $t0,2
+
+sw      $t0,gameState($gp)
+
+b       8f
+
+8:  move    $v0,$s0
+
+move    $v1,$s1
+
+lw      $ra,0($sp)
+
+lw      $s0,4($sp)
+
+lw      $s1,8($sp)
+
+add     $sp,$sp,12
+
+jr      $ra
+
+# card.clic(card * c: a0)
+
+card.clic:
+
+addi    $sp,$sp,-20
+
+sw      $ra,0($sp)     # save return address
+
+sw      $s0,4($sp)
+
+sw      $s1,8($sp)
+
+sw      $s2,12($sp)
+
+sw      $s3,16($sp)
+
+lw      $s0,state($gp)
+
+lw      $s1,card1($gp)
+
+lw      $s2,card2($gp)
+
+lb      $t0,card.match($a0)
+
+bnez    $t0,6f
+
+ori     $t0,$0,1
+
+bnez    $s0,1f
+
+addi    $s0,$s0,1
+
+move    $s1,$a0
+
+sw      $0,tstart($gp)
+
+b       5f
+
+1:  bne     $s0,1,2f
+
+addi    $s0,$s0,1
+
+lw      $t1,time($gp)
+
+sw      $t1,tstart($gp)
+
+move    $s2,$a0
+
+bne     $s1,$s2,5f
+
+or      $t0,$0,$0
+
+or      $s0,$0,$0
+
+b       5f
+
+2:  move    $s3,$a0
+
+sw      $0,tstart($gp)
+
+sb      $0,card.faceup($s1)
+
+sb      $0,card.faceup($s2)
+
+lw      $t1,card.word($s1)
+
+lw      $t2,card.word($s2)
+
+bne     $t1,$t2,3f
+
+sb      $t0,card.match($s1)
+
+sb      $t0,card.match($s2)
+
+lw      $t1,left($gp)   # decrement cards left
+
+addi    $t1,$t1,-2
+
+sw      $t1,left($gp)
+
+3:  move     $a0,$s1
+
+jalcard.draw
+
+move    $a0,$s2
+
+jalcard.draw
+
+beq     $s3,$s1,4f
+
+beq     $s3,$s2,4f
+
+move    $a0,$s3
+
+move    $s1,$s3
+
+ori     $s0,$0,1
+
+ori     $t0,$0,1
+
+b       5f
+
+4:  or      $s0,$0,$0
+
+b       6f
+
+5:  sb      $t0,card.faceup($a0)
+
+jalcard.draw
+
+6:  sw      $s0,state($gp)
+
+sw      $s1,card1($gp)
+
+sw      $s2,card2($gp)
+
+lw      $s0,turns($gp)
+
+addi    $s0,$s0,1
+
+sw      $s0,turns($gp)
+
+lw      $ra,0($sp)
+
+lw      $s0,4($sp)
+
+lw      $s1,8($sp)
+
+lw      $s2,12($sp)
+
+lw      $s3,16($sp)
+
+add     $sp,$sp,20
+
+jr $ra
+
+#——————————————————————————-
+
+# void main()
+
+main:
+
+ori     $t0,$0,1
+
+sw      $t0,lfsr($gp)
+
+la      $a0,infile  # load all words in memory
+
+la      $a1,words
+
+jalFileread
+
+la         $a0,timer.t1     # hardware address of timer1
+
+addi $a1,$0,4        # 4 byte data
+
+addi $a2,$0,1000          # timer interval every 1 second
+
+syscall $IO_write
+
+1:  jalclrscr
+
+la      $a0,prompt
+
+syscall $print_string
+
+kloop:
+
+jal     random
+
+la       $a0,keyboard.flags     # hardware address of keyboard flags
+
+addi $a1,$0,1        # 1 byte of data
+
+syscall $IO_read           # read flags
+
+blez $v0,kloop       # branch if no keyboard flags
+
+andi $t0,$v0,1       # flag bit 0
+
+beqz    $t0,kloop
+
+la       $a0,keyboard.keypress  # hardware address of ascii data
+
+addi $a1,$0,1        # 1 byte of data
+
+syscall    $IO_read
+
+addi    $v0,$v0,-48
+
+beqz    $v0,1b        #
+
+sltiu   $t0,$v0,7       # check for out-of-range
+
+beqz    $t0,1b          # try again
+
+jalclrscr          # clear the screen
+
+sw      $0,state($gp)
+
+sw      $0,card1($gp)
+
+sw      $0,card2($gp)
+
+sw      $0,turns($gp)
+
+sw      $0,time($gp)
+
+sw      $0,gameState($gp)
+
+sw      $0,tstart($gp)
+
+ori     $t0,$0,2
+
+sllv    $s0,$t0,$v0     # calculate 2<<n
+
+sw      $v0,n($gp)       # save difficulty n
+
+sw      $s0,left($gp)    # save difficulty 2<<n, number of cards
+
+or      $a0,$0,$s0      # reserve space for card array
+
+sll     $a0,$a0,2       # multiply by 4 to get number in bytes
+
+syscall $malloc
+
+la      $t0,array       # point to start of array with s5
+
+sw      $v0,($t0)       # save pointer to allocated array
+
+or      $s5,$0,$v0
+
+lw      $v0,n($gp)       # restore difficulty level in v0
+
+li      $s1,2           # initial boxes wide
+
+li      $s2,1           # initial boxes tall
+
+andi    $t0,$v0,1       # odd?
+
+srl     $v0,$v0,1       # divided by 2
+
+sllv    $s1,$s1,$v0
+
+add     $v0,$v0,$t0
+
+sllv    $s2,$s2,$v0
+
+la      $t0,wid
+
+sw      $s1,($t0)
+
+la      $t0,hei
+
+sw      $s2,($t0)
+
+or      $s7,$0,$0
+
+mov     $s4,$0          # working counters y
+
+mov     $s3,$0          #            x
+
+li      $a2,3           # width of middle of box
+
+2:  li      $a3,1           # height of middle of box
+
+sll     $a0,$s3,2
+
+add     $a0,$a0,$s3     # x = 5 * s3
+
+sll     $a1,$s4,1
+
+add     $a1,$a1,$s4     # y = 3 * s4
+
+jalcard.new
+
+or      $s0,$v0,$0
+
+sw      $a0,card.x($s0) # save x and y
+
+sw      $a1,card.y($s0)
+
+bnez    $s7,3f
+
+jal     random          # generate a word number
+
+ori     $t0,$0,611
+
+divu    $v0,$t0
+
+mfhi    $s6
+
+3:  sw      $s6,card.word($s0)
+
+sw      $s0,($s5)
+
+addi    $s5,$s5,4
+
+xori    $s7,$s7,1
+
+addi    $s3,$s3,1
+
+bne     $s3,$s1,2b
+
+mov     $s3,$0
+
+addi    $s4,$s4,1
+
+bne     $s4,$s2,2b
+
+la      $t0,array       # shuffle the cards
+
+lw      $a0,($t0)
+
+lw      $a1,left($gp)
+
+jal     Shuffle
+
+or      $s0,$a1,$0      # print cards
+
+la      $t0,array
+
+lw      $s1,($t0)       # get array pointer in s1
+
+4:  lw      $t0,($s1)       # get a card pointer
+
+or      $a0,$0,$t0
+
+jalcard.draw
+
+addi    $s1,$s1,4
+
+addi    $s0,$s0,-1
+
+bnez    $s0,4b
+
+addi $a0,$0,60
+
+addi $a1,$0,24
+
+syscall    $xy
+
+la      $a0,mtime
+
+syscall    $print_string
+
+lw      $a0,time($gp)
+
+syscall    $print_int
+
+li      $s0,0
+
+li      $s1,0
+
+li      $s2,0
+
+5:  or      $a0,$0,$0
+
+ori     $a1,$0,24
+
+syscall $xy
+
+la      $a0,mturns
+
+syscall $print_string
+
+lw      $a0,turns($gp)
+
+syscall $print_int
+
+ori     $a0,$0,25
+
+ori     $a1,$0,24
+
+syscall $xy
+
+la      $a0,bttns
+
+syscall $print_string
+
+lw      $t0,left($gp)
+
+beqz    $t0,winner
+
+jalpollMouse
+
+lw      $t0,gameState($gp)
+
+bnez    $t0,restart
+
+7:  li      $t0,5
+
+div     $t1,$v0,$t0
+
+li      $t0,3
+
+div     $t2,$v1,$t0
+
+la      $t0,wid
+
+lw      $t3,($t0)
+
+la      $t0,hei
+
+lw      $t4,($t0)
+
+bge     $t1,$t3,5b
+
+bge     $t2,$t4,5b
+
+mul     $t0,$t2,$t3
+
+add     $t0,$t0,$t1
+
+sll     $t0,$t0,2
+
+la      $t1,array
+
+lw      $a0,($t1)       # get array pointer in a0
+
+add     $a0,$a0,$t0
+
+lw      $a0,($a0)
+
+jalcard.clic
+
+b       5b
+
+winner:
+
+ori     $a0,$0,30
+
+ori     $a1,$0,10
+
+syscall $xy
+
+la      $a0,mwin0
+
+syscall $print_string
+
+ori     $a0,$0,30
+
+addi    $a1,$a1,1
+
+syscall $xy
+
+la      $a0,mwin1
+
+syscall $print_string
+
+ori     $a0,$0,30
+
+addi    $a1,$a1,1
+
+syscall $xy
+
+la      $a0,mwin2
+
+syscall $print_string
+
+ori     $a0,$0,30
+
+addi    $a1,$a1,1
+
+syscall $xy
+
+la      $a0,mwin3
+
+syscall $print_string
+
+restart:
+
+ori     $t0,$0,2
+
+lw      $s0,n($gp)      # get difficulty n
+
+sllv    $s0,$t0,$s0     # calculate 2<<n
+
+la      $t0,array       # free all allocated space
+
+lw      $s1,($t0)       # get array pointer in s1
+
+10: lw      $a0,($s1)       # get a card pointer
+
+syscall $free
+
+addi    $s1,$s1,4
+
+addi    $s0,$s0,-1
+
+bnez    $s0,10b
+
+la      $t0,array
+
+lw      $a0,($t0)       # get pointer to allocated array
+
+syscall $free           # free it
+
+li      $t0,-1
+
+sw      $t0,time($gp)
+
+wa: lw      $t0,gameState($gp)
+
+beq     $t0,1,quit
+
+beq     $t0,2,1b
+
+jalpollMouse
+
+b       wa
+
+quit:
+
+syscall $exit
+

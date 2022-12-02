@@ -27,9 +27,9 @@
 	tutorial_page_2:		.asciiz "           _      ___     ____    _ _     ___      __     ____                                               \n          / |    |_  )   |__ /   | | |   | __|    / /    |__  |        .-----------------------------------. \n          | |     / /     |_ \\   |_  _|  |__ \\   / _ \\     / /        |                RULES                |\n          |_|    /___|   |___/     |_|   |___/   \\___/    /_/         | .---------------------------------. |\n                                                                      ||   Particularly, the player have   ||\n       |       |       |       |       |       |       |       |      ||    to input in the terminal the   ||\n       |       |       |       |       |       |       |       |      ||  character 1 to 7 to choose the   ||\n       |       |       |       |       |       |       |       |      ||  desired column. Moreover, each   ||\n       |       |       |       |       |       |       |       |      ||  player can undo 3 times in the   ||\n       |       |       |       |  @@@  |       |       |       |      ||  whole game, which is asked when  ||\n       |       |       |       | @@0@@ |       |       |       |      || that player have select a column  ||\n       |       |       |       |  @@@  |       |       |       |      ||   and before the opponent turn.   ||\n       |       |       |       |       |       |       |       |      ||                                   ||\n       |       |       |       |  \\ /  |       |       |       |      ||  However, there are also 3 marks  ||\n       |       |       |       |   X   |       |       |       |      ||  for violation for each players.  ||\n       |       |       |       |  / \\  |       |       |       |      ||  Violation is count when placing  ||\n       |       |       |       |       |       |       |       |      ||    a piece at an inappropiate     ||\n       |       |       |  @@@  |  @@@  |  \\ /  |       |       |      ||   column (such as out of range    ||\n       |       |       | @@0@@ | @@0@@ |   X   |       |       |      ||  fully filled column), and need   ||\n       |       |       |  @@@  |  @@@  |  / \\  |       |       |      || to restart the move. The player   ||\n       |       |       |       |       |       |       |       |      ||   who violate more than 3 times   ||\n       |       |  \\ /  |  @@@  |  @@@  |  \\ /  |  \\ /  |       |      || who immediately lose the game !   ||\n       |       |   X   | @@0@@ | @@0@@ |   X   |   X   |       |      ||                                   ||\n       |       |  / \\  |  @@@  |  @@@  |  / \\  |  / \\  |       |      ||   There will be a board here to   ||\n       |       |       |       |       |       |       |       |      ||    keep track of all the marks    ||\n       |  \\ /  |  @@@  |  @@@  |  \\ /  |  \\ /  |  @@@  |  \\ /  |      ||                                   ||\n       |   X   | @@0@@ | @@0@@ |   X   |   X   | @@0@@ |   X   |      ||      GOOD LUCK AND HAVE FUN!      ||\n       |  / \\  |  @@@  |  @@@  |  / \\  |  / \\  |  @@@  |  / \\  |      | '---------------------------------' |\n       |_______|_______|_______|_______|_______|_______|_______|       '-----------------------------------' \n\n\n"
 
 	#start announcement
-	tell_game_start:		.asciiz "-----------------------   GAME START!   -----------------------"
-	start_as_x:		.asciiz "\nX PLAYER GOES FIRST"
-	start_as_0:		.asciiz "\n0 PLAYER GOES FIRST"
+	popup_game_start:		.asciiz "-----------------------   GAME START!   -----------------------"
+	start_as_x:		.asciiz "\nX PLAYER GOES FIRST THIS GAME"
+	start_as_0:		.asciiz "\n0 PLAYER GOES FIRST THIS GAME"
 
 	#phase string
 	phase_x_turn: 		.asciiz "=======================================[ PLAYER'S X TURN ]========================================="
@@ -49,11 +49,13 @@
         undo_success:		.asciiz "\nYOU HAVE SUCCESSFULLY UNDO, PRESS THE COLUMN INDEX (1-7) YOU WANT TO DROP : "
         turn_error_1_7:		.asciiz "\nWARNING: YOU HAVE BEEN GIVEN A MARK FOR VIOLATING (3 TIMES = LOSE)\nTHE CHOICE YOU'VE ENTERED IS NOT IN THE SLOT RANGE (1-7). PLEASE ENTER THE RIGHT CHOICE: "
 	occupied:		.asciiz "\nWARNING: YOU HAVE BEEN GIVEN A MARK FOR VIOLATING (3 TIMES = LOSE)\nTHE COLUMN IS FULL, PLEASE ENTER OTHER COLUMN:"
-	violation_warn:		.asciiz "WARNING: YOU HAVE BEEN GIVEN A MARK FOR VIOLATING (3 TIMES VIOLATION = LOSE!)\n This message was pop up to prevent multiple character pressed"
-	undo_ask:		.asciiz "\nYOU DO WISH TO UNDO YOUR MOVE (PRESS Y) OR ANY OTHER BUTTON TO CONTINUE ? "
-	  	 	 	 	
+	popup_violation:		.asciiz "WARNING: YOU HAVE BEEN GIVEN A MARK FOR VIOLATING (3 TIMES VIOLATION = LOSE!)\n This message was pop up to prevent multiple character pressed"
+	undo_ask:		.asciiz "\nYOU DO WISH TO UNDO YOUR MOVE (PRESS Y) OR ANY OTHER BUTTON TO CONTINUE ? \ntips: double press your number to imediately confirm your choice :"
+	no_undo_notice:		.asciiz "\nYOU HAVE USED ALL OF YOUR UNDO TURNS, PRESS ANY BUTTON TO CONTINUE. \ntips: double press your number to imediately confirm your choice : "
+	popup_no_more_undo:	.asciiz "WARNING: YOU HAVE USED ALL OF YOUR UNDO TURNS, BECAREFUL WITH YOUR CHOICE FROM NOW ON"
+	  	 	 	 	  	 	 	 	
 	# win_menu string
-	tell_game_over:		.asciiz "----------------------  GAME OVER!   ----------------------"
+	popup_game_over:		.asciiz "----------------------  GAME OVER!   ----------------------"
 	x_won_connect_4:		.asciiz "\nPLAYER X HAS CONNECTED 4 PIECES, PLAYER X WON !"
 	o_won_connect_4:		.asciiz "\nPLAYER 0 HAS CONNECTED 4 PIECES, PLAYER 0 WON !"
 	x_won_o_violate:		.asciiz "\nPLAYER 0 HAS VIOLATED 3 TIMES, PLAYER X WON !"
@@ -219,7 +221,7 @@ init_game:
     	init_game_break:    	
     	#Dialog
 	li $v0, 59
-	la $a0, tell_game_start
+	la $a0, popup_game_start
 	syscall
     	
     	#start
@@ -503,7 +505,7 @@ win_menu: # a1 = case
 	#Dialog
 	li $v0, 59
 	move $a1, $a0
-	la $a0, tell_game_over
+	la $a0, popup_game_over
 	syscall
 		
 	li $v0, 4
@@ -616,7 +618,7 @@ player_violate: #return v1 = 3 if violated, and decrease
 	
 	#warning mips menu
 	li $v0, 55
-	la $a0, violation_warn
+	la $a0, popup_violation
 	li $a1, 2
 	syscall
 	
@@ -649,6 +651,10 @@ check_undo: # return v1 = 1 if undo, else v1 = 0 so no
 	sw $t3, 16($sp)
 	sw $a1, 	20($sp)
 
+	
+	jal print_board
+	jal print_phase
+	
 	# assump no undo
 	
 	beq $s5, 1 , check_undo_x
@@ -660,9 +666,6 @@ check_undo: # return v1 = 1 if undo, else v1 = 0 so no
 		
 		beq $t1, '0', check_undo_false # player x have used undo 3 times
 		
-		jal print_board
-		jal print_phase
-		
 		li $v0, 4
 		la $a0, undo_ask
 		syscall
@@ -671,7 +674,7 @@ check_undo: # return v1 = 1 if undo, else v1 = 0 so no
 		li $v0, 12			
 		syscall	
 		
-		bne $v0, 'Y', check_undo_false 
+		bne $v0, 'Y', check_undo_not_undo 
 
 		addi $t1, $t1, -1
 		sb $t1, board($t0) #decrease x undo moves
@@ -679,8 +682,8 @@ check_undo: # return v1 = 1 if undo, else v1 = 0 so no
 		jal clear_slot
 		
 		lw $t2, x_last_move_index 
-		addi $t1, $0 ,63 # 63 is character '?'
-		sb $t1, board($t2)
+		addi $t3, $0 ,63 # 63 is character '?'
+		sb $t3, board($t2)
 		
 		j check_undo_true
 	
@@ -690,9 +693,6 @@ check_undo: # return v1 = 1 if undo, else v1 = 0 so no
 		
 		beq $t1, '0', check_undo_false # player o have used undo 3 times
 		
-		jal print_board
-		jal print_phase
-		
 		li $v0, 4
 		la $a0, undo_ask
 		syscall
@@ -701,7 +701,7 @@ check_undo: # return v1 = 1 if undo, else v1 = 0 so no
 		li $v0, 12			
 		syscall	
 		
-		bne $v0, 'Y', check_undo_false 
+		bne $v0, 'Y', check_undo_not_undo
 		
 		addi $t1, $t1, -1
 		sb $t1, board($t0) #decrease o undo moves
@@ -709,15 +709,25 @@ check_undo: # return v1 = 1 if undo, else v1 = 0 so no
 		jal clear_slot
 		
 		lw $t2, o_last_move_index 
-		addi $t1, $0 ,63 # 63 is character '?'
-		sb $t1, board($t2)
+		addi $t3, $0 ,63 # 63 is character '?'
+		sb $t3, board($t2)
 		
 		j check_undo_true
 		
 		
 	check_undo_false:
-	li $v1, 0
+	
+	li $v0, 4
+	la $a0, no_undo_notice
+	syscall
+		
+	#wait for input	
+	li $v0, 12			
+	syscall	
 
+	check_undo_not_undo:
+	li $v1, 0
+	
 	lw $ra, 0($sp)
 	lw $t0, 4($sp)
 	lw $t1, 8($sp)
@@ -731,6 +741,16 @@ check_undo: # return v1 = 1 if undo, else v1 = 0 so no
 	check_undo_true:
 	li $v1, 1
 
+	bne $t1, '0', check_undo_is_not_last 
+	
+	# is the last undo move so we give a warning
+	li $v0, 55
+	la $a0, popup_no_more_undo
+	li $a1, 2
+	syscall
+
+	check_undo_is_not_last:
+	
 	lw $ra, 0($sp)
 	lw $t0, 4($sp)
 	lw $t1, 8($sp)
