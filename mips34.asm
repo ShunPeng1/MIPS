@@ -13,7 +13,26 @@ buffer_read: .asciiz "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 .text
 lw $t6 , size
 lw $t7, max_size
-la $s7 , buffer_read
+###############################################################
+# Open (for writing) a file that does not exist
+li $v0, 13 # system call for open file
+la $a0, fout # output file name
+li $a1, 1 # Open for writing (flags are 0: read, 1: write)
+li $a2, 0 # mode is ignored
+syscall # open a file (file descriptor returned in $v0)
+move $s6, $v0 # save the file descriptor
+###############################################################
+# Write to file just opened
+li $v0, 15 # system call for write to file
+move $a0, $s6 # file descriptor
+la $a1, buffer_write # address of buffer from which to write
+move $a2, $t6 # hardcoded buffer length
+syscall # write to file
+###############################################################
+# Close the file
+li $v0, 16 # system call for close file
+move $a0, $s6 # file descriptor to close
+syscall # close file
 ###############################################################
 ###############################################################
 # Open (for reading) a file
@@ -31,46 +50,9 @@ la $a1, buffer_read # address of buffer read
 move $a2, $t6 # hardcoded buffer length
 syscall # read file
 
-
-li $v0, 9 # system call code for dynamic allocation
-move $a0, $t7 # $a0 contains number of bytes to allocate
+li $v0, 4
+la $a0, buffer_save
 syscall
 
-move $s5, $v0 #save heap location
 
-
-addi $t1 , $0, 0 #index
-forArray1:
-beq $t1, $t6 , exit1
-
-add $t4 , $t1, $s7
-add $t5, $t1, $s5 
-
-lb $t0, 0($t4)
-sb $t0, 0($t5)
-
-addi $t1, $t1, 1
-j forArray1
-
-exit1: 
-
-
-addi $t1 , $0, 0 #index
-forArray2:
-beq $t1, $t6 , exit2
-
-add $t4 , $t1, $s7
-add $t5, $t1, $s5 
-
-
-lb $t0, 0($t5)
-
-li $v0, 11
-move $a0, $t0
-syscall 
-
-addi $t1, $t1, 1
-j forArray2
-
-exit2: 
 
