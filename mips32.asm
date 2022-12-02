@@ -72,7 +72,7 @@ main:
 	
 	
 	addi $s6, $0, -1
-	addi $s7, $0, 100000 # num of sub part
+	addi $s7, $0, 10000 # num of sub part
 	sub.d $f14, $f2, $f4 
 	
 	mtc1.d $s7, $f16
