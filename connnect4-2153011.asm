@@ -1,6 +1,6 @@
 .data 
 	#board string and size offset
-	board: 			.asciiz "           _      ___     ____    _ _     ___      __     ____                                     \n          / |    |_  )   |__ /   | | |   | __|    / /    |__  |                                    \n          | |     / /     |_ \\   |_  _|  |__ \\   / _ \\     / /                                     \n          |_|    /___|   |___/     |_|   |___/   \\___/    /_/                                      \n                                                                                                   \n       |       |       |       |       |       |       |       |       .-------------------------. \n       |       |       |       |       |       |       |       |      |         PLAYER X          |\n       |       |       |       |       |       |       |       |      | .-----------------------. |\n       |       |       |       |       |       |       |       |      ||   VIOLATION :  0/3      ||\n       |       |       |       |       |       |       |       |      ||                         ||\n       |       |       |       |       |       |       |       |      ||   UNDO      :  3/3      ||\n       |       |       |       |       |       |       |       |      ||                         ||\n       |       |       |       |       |       |       |       |      ||   LAST MOVE :  ?        ||\n       |       |       |       |       |       |       |       |      | '-----------------------' |\n       |       |       |       |       |       |       |       |       '-------------------------' \n       |       |       |       |       |       |       |       |                                   \n       |       |       |       |       |       |       |       |                                   \n       |       |       |       |       |       |       |       |                                   \n       |       |       |       |       |       |       |       |       .-------------------------. \n       |       |       |       |       |       |       |       |      |         PLAYER 0          |\n       |       |       |       |       |       |       |       |      | .-----------------------. |\n       |       |       |       |       |       |       |       |      ||   VIOLATION :  0/3      ||\n       |       |       |       |       |       |       |       |      ||                         ||\n       |       |       |       |       |       |       |       |      ||   UNDO      :  3/3      ||\n       |       |       |       |       |       |       |       |      ||                         ||\n       |       |       |       |       |       |       |       |      ||   LAST MOVE :  ?        ||\n       |       |       |       |       |       |       |       |      | '-----------------------' |\n       |       |       |       |       |       |       |       |       '-------------------------' \n       |_______|_______|_______|_______|_______|_______|_______|                                   \n                                                                                                   \n                                                                                                   \n"
+	board: 			.asciiz "           _      ___     ____    _ _     ___      __     ____                                     \n          / |    |_  )   |__ /   | | |   | __|    / /    |__  |        .-------------------------. \n          | |     / /     |_ \\   |_  _|  |__ \\   / _ \\     / /        |         PLAYER X          |\n          |_|    /___|   |___/     |_|   |___/   \\___/    /_/         | .-----------------------. |\n                                                                      ||   NAME      :           ||\n       |       |       |       |       |       |       |       |      ||                         ||\n       |       |       |       |       |       |       |       |      ||   VIOLATION :  0/3      ||\n       |       |       |       |       |       |       |       |      ||                         ||\n       |       |       |       |       |       |       |       |      ||   UNDO      :  3/3      ||\n       |       |       |       |       |       |       |       |      ||                         ||\n       |       |       |       |       |       |       |       |      ||   LAST MOVE :  ?        ||\n       |       |       |       |       |       |       |       |      | '-----------------------' |\n       |       |       |       |       |       |       |       |       '-------------------------' \n       |       |       |       |       |       |       |       |                                   \n       |       |       |       |       |       |       |       |                                   \n       |       |       |       |       |       |       |       |                                   \n       |       |       |       |       |       |       |       |       .-------------------------. \n       |       |       |       |       |       |       |       |      |         PLAYER 0          |\n       |       |       |       |       |       |       |       |      | .-----------------------. |\n       |       |       |       |       |       |       |       |      ||   NAME      :           ||\n       |       |       |       |       |       |       |       |      ||                         ||\n       |       |       |       |       |       |       |       |      ||   VIOLATION :  0/3      ||\n       |       |       |       |       |       |       |       |      ||                         ||\n       |       |       |       |       |       |       |       |      ||   UNDO      :  3/3      ||\n       |       |       |       |       |       |       |       |      ||                         ||\n       |       |       |       |       |       |       |       |      ||   LAST MOVE :  ?        ||\n       |       |       |       |       |       |       |       |      | '-----------------------' |\n       |       |       |       |       |       |       |       |       '-------------------------' \n       |_______|_______|_______|_______|_______|_______|_______|                                   \n                                                                                                   \n                                                                                                   \n"
     	number_of_element:	.word 0
     	
 	#offsets
@@ -10,10 +10,12 @@
 	column_offset:		.word 	8
 	
 	# char position of the board
-	x_violation_index:	.word 	888
-	x_undo_index:		.word 	1088
-	x_last_move_index:	.word 	1288
+	x_name_index:		.word	488
+	x_violation_index:	.word 	688
+	x_undo_index:		.word 	888
+	x_last_move_index:	.word 	1088
 	
+	o_name_index:		.word	1988
 	o_violation_index:	.word 	2188
 	o_undo_index:		.word 	2388
 	o_last_move_index:	.word 	2588
@@ -26,12 +28,20 @@
 	tutorial_page_1:		.asciiz "           _      ___     ____    _ _     ___      __     ____                                               \n          / |    |_  )   |__ /   | | |   | __|    / /    |__  |        .-----------------------------------. \n          | |     / /     |_ \\   |_  _|  |__ \\   / _ \\     / /        |                RULES                |\n          |_|    /___|   |___/     |_|   |___/   \\___/    /_/         | .---------------------------------. |\n                                                                      ||     The game is played with a     ||\n       |       |       |       |       |       |       |       |      ||   seven-column and six-row grid,  ||\n       |       |       |       |       |       |       |       |      ||  which is arranged upright. The   ||\n       |       |       |       |       |       |       |       |      ||    starting player is randomly    ||\n       |       |       |       |       |       |       |       |      ||  chosen, pick a game piece color  ||\n       |       |       |       |  @@@  |       |       |       |      ||   (X or 0) and can place a piece  ||\n       |       |       |       | @@0@@ |       |       |       |      ||  in any column. Each player then  ||\n       |       |       |       |  @@@  |       |       |       |      || alternately takes a turn placing  ||\n       |       |       |       |       |       |       |       |      ||   a piece in any column that is   ||\n       |       |       |       |  \\ /  |       |       |       |      || not already full. The piece fall  ||\n       |       |       |       |   X   |       |       |       |      ||   straight down, occupying the    ||\n       |       |       |       |  / \\  |       |       |       |      ||    lowest available spot within   ||\n       |       |       |       |       |       |       |       |      ||    the column or be stopped by    ||\n       |       |       |  @@@  |  @@@  |  \\ /  |       |       |      ||  another piece. The aim is to be  ||\n       |       |       | @@0@@ | @@0@@ |   X   |       |       |      ||  the first of the two players to  ||\n       |       |       |  @@@  |  @@@  |  / \\  |       |       |      || connect four pieces of the same   ||\n       |       |       |       |       |       |       |       |      ||  colour vertically, horizontally  ||\n       |       |  \\ /  |  @@@  |  @@@  |  \\ /  |  \\ /  |       |      ||   or diagonally (an example is    ||\n       |       |   X   | @@0@@ | @@0@@ |   X   |   X   |       |      || shown here). If each cell of the  ||\n       |       |  / \\  |  @@@  |  @@@  |  / \\  |  / \\  |       |      ||    grid is filled and no player   ||\n       |       |       |       |       |       |       |       |      ||     has already connected four    ||\n       |  \\ /  |  @@@  |  @@@  |  \\ /  |  \\ /  |  @@@  |  \\ /  |      ||     pieces, the game ends in a    ||\n       |   X   | @@0@@ | @@0@@ |   X   |   X   | @@0@@ |   X   |      ||      draw, so no player wins.     ||\n       |  / \\  |  @@@  |  @@@  |  / \\  |  / \\  |  @@@  |  / \\  |      | '---------------------------------' |\n       |_______|_______|_______|_______|_______|_______|_______|       '-----------------------------------' \n\n\n"
 	tutorial_page_2:		.asciiz "           _      ___     ____    _ _     ___      __     ____                                               \n          / |    |_  )   |__ /   | | |   | __|    / /    |__  |        .-----------------------------------. \n          | |     / /     |_ \\   |_  _|  |__ \\   / _ \\     / /        |                RULES                |\n          |_|    /___|   |___/     |_|   |___/   \\___/    /_/         | .---------------------------------. |\n                                                                      ||   Particularly, the player have   ||\n       |       |       |       |       |       |       |       |      ||    to input in the terminal the   ||\n       |       |       |       |       |       |       |       |      ||  character 1 to 7 to choose the   ||\n       |       |       |       |       |       |       |       |      ||  desired column. Moreover, each   ||\n       |       |       |       |       |       |       |       |      ||  player can undo 3 times in the   ||\n       |       |       |       |  @@@  |       |       |       |      ||  whole game, which is asked when  ||\n       |       |       |       | @@0@@ |       |       |       |      || that player have select a column  ||\n       |       |       |       |  @@@  |       |       |       |      ||   and before the opponent turn.   ||\n       |       |       |       |       |       |       |       |      ||                                   ||\n       |       |       |       |  \\ /  |       |       |       |      ||  However, there are also 3 marks  ||\n       |       |       |       |   X   |       |       |       |      ||  for violation for each players.  ||\n       |       |       |       |  / \\  |       |       |       |      ||  Violation is count when placing  ||\n       |       |       |       |       |       |       |       |      ||    a piece at an inappropiate     ||\n       |       |       |  @@@  |  @@@  |  \\ /  |       |       |      ||   column (such as out of range    ||\n       |       |       | @@0@@ | @@0@@ |   X   |       |       |      ||  fully filled column), and need   ||\n       |       |       |  @@@  |  @@@  |  / \\  |       |       |      || to restart the move. The player   ||\n       |       |       |       |       |       |       |       |      ||   who violate more than 3 times   ||\n       |       |  \\ /  |  @@@  |  @@@  |  \\ /  |  \\ /  |       |      || who immediately lose the game !   ||\n       |       |   X   | @@0@@ | @@0@@ |   X   |   X   |       |      ||                                   ||\n       |       |  / \\  |  @@@  |  @@@  |  / \\  |  / \\  |       |      ||   There will be a board here to   ||\n       |       |       |       |       |       |       |       |      ||    keep track of all the marks    ||\n       |  \\ /  |  @@@  |  @@@  |  \\ /  |  \\ /  |  @@@  |  \\ /  |      ||                                   ||\n       |   X   | @@0@@ | @@0@@ |   X   |   X   | @@0@@ |   X   |      ||      GOOD LUCK AND HAVE FUN!      ||\n       |  / \\  |  @@@  |  @@@  |  / \\  |  / \\  |  @@@  |  / \\  |      | '---------------------------------' |\n       |_______|_______|_______|_______|_______|_______|_______|       '-----------------------------------' \n\n\n"
 
-	#start announcement
+	#ask for name
+	input_x_name:	.asciiz "\nINPUT PLAYER X NAME (max 6 characters) :"
+	input_o_name:	.asciiz "\nINPUT PLAYER O NAME (max 6 characters) :"
+	x_name:			.space 6
+	o_name:			.space 6
+	
+	
+	#init game announcement	
 	popup_game_start:		.asciiz "-----------------------   GAME START!   -----------------------"
 	start_as_x:		.asciiz "\nX PLAYER GOES FIRST THIS GAME"
 	start_as_0:		.asciiz "\n0 PLAYER GOES FIRST THIS GAME"
 
 	#phase string
+	phase_init: 		.asciiz "=======================================[  INITIALIZING!  ]========================================="
 	phase_x_turn: 		.asciiz "=======================================[ PLAYER'S X TURN ]========================================="
 	phase_o_turn:		.asciiz "=======================================[ PLAYER'S 0 TURN ]========================================="
 	phase_game_over:		.asciiz "=======================================[    GAME OVER!   ]========================================="
@@ -199,6 +209,10 @@ init_game:
     	#reset num of element 
 	addi $v0, $0, 0
 	sw $v0, number_of_element
+    	
+    	#asked for name of the player
+    	jal ask_for_name
+    	
     	
     	#random start
 	li $a1, 2  #Here you set $a1 to the max bound.
@@ -556,6 +570,105 @@ calculate_coordinate:  # a2 = row_index(1-6) , a3 = column index (1-7)  return v
 	
 	jr $ra
 
+ask_for_name:
+    	addi $sp, $sp, -20
+	sw $ra, 0($sp)
+	sw $t0, 4($sp)
+	sw $t1, 8($sp)
+	sw $t2, 12($sp)
+	sw $t3, 16($sp)
+    	
+    	lw $t3, x_name_index
+    	lw $t2, o_name_index
+    	
+    	li $t1, ' '
+    	
+    	#reset names
+    	sb $t1, board + 0($t2)
+    	sb $t1, board + 1($t2)
+    	sb $t1, board + 2($t2)
+    	sb $t1, board + 3($t2)
+    	sb $t1, board + 4($t2)
+    	sb $t1, board + 5($t2)
+    	
+    	sb $t1, board + 0($t3)
+    	sb $t1, board + 1($t3)
+    	sb $t1, board + 2($t3)
+    	sb $t1, board + 3($t3)
+    	sb $t1, board + 4($t3)
+    	sb $t1, board + 5($t3)
+    	
+    	#print board ask for name X
+    	jal print_board
+    	
+    	li $v0, 4
+	la $a0, phase_init
+	syscall
+    	
+    	li $v0, 4
+	la $a0, input_x_name
+	syscall
+	
+	li $v0, 8
+	la $a0, x_name
+	li $a1, 7
+	syscall
+    	
+    	li $t0 -1
+    	insert_name_to_board_x:
+    		addi $t0, $t0, 1
+    		lb $t1, x_name + 0($t0)
+    		
+    		beq $t1, 0, insert_name_break_x # foreach word in name, insert into board
+		beq $t1, '\n', insert_name_break_x # foreach word in name, insert into board
+		
+        		add $t2, $t0, $t3  
+    		sb $t1, board + 0($t2)	
+    		j insert_name_to_board_x
+
+    	insert_name_break_x:
+ 
+
+    	lw $t3, o_name_index
+    	    	
+    	#print board ask for name O
+    	jal print_board
+    	
+    	li $v0, 4
+	la $a0, phase_init
+	syscall
+    	
+    	li $v0, 4
+	la $a0, input_o_name
+	syscall
+	
+	li $v0, 8
+	la $a0, o_name
+	li $a1, 7
+	syscall
+    	    	
+    	li $t0 -1
+    	insert_name_to_board_o:
+    		addi $t0, $t0, 1
+    		lb $t1, o_name + 0($t0)
+    		
+    		beq $t1, 0, insert_name_break_o # foreach word in name, insert into board
+    		beq $t1, '\n', insert_name_break_o # foreach word in name, insert into board
+    		
+    		add $t2, $t0, $t3  
+    		sb $t1, board + 0($t2)	
+    		j insert_name_to_board_o
+
+    	insert_name_break_o:
+    	
+    	lw $ra, 0($sp)
+	lw $t0, 4($sp)
+	lw $t1, 8($sp)
+	lw $t2, 12($sp)
+	lw $t3, 16($sp)
+	
+	addi $sp, $sp, 20
+	jr $ra
 print_phase:
 
 	beq $s5, 1, print_phase_x_turn
