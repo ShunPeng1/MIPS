@@ -29,14 +29,14 @@
 	tutorial_page_2:		.asciiz "           _      ___     ____    _ _     ___      __     ____                                               \n          / |    |_  )   |__ /   | | |   | __|    / /    |__  |        .-----------------------------------. \n          | |     / /     |_ \\   |_  _|  |__ \\   / _ \\     / /        |                RULES                |\n          |_|    /___|   |___/     |_|   |___/   \\___/    /_/         | .---------------------------------. |\n                                                                      ||   Particularly, the player have   ||\n       |       |       |       |       |       |       |       |      ||    to input in the terminal the   ||\n       |       |       |       |       |       |       |       |      ||  character 1 to 7 to choose the   ||\n       |       |       |       |       |       |       |       |      ||  desired column. Moreover, each   ||\n       |       |       |       |       |       |       |       |      ||  player can undo 3 times in the   ||\n       |       |       |       |  @@@  |       |       |       |      ||  whole game, which is asked when  ||\n       |       |       |       | @@0@@ |       |       |       |      || that player have select a column  ||\n       |       |       |       |  @@@  |       |       |       |      ||   and before the opponent turn.   ||\n       |       |       |       |       |       |       |       |      ||                                   ||\n       |       |       |       |  \\ /  |       |       |       |      ||  However, there are also 3 marks  ||\n       |       |       |       |   X   |       |       |       |      ||  for violation for each players.  ||\n       |       |       |       |  / \\  |       |       |       |      ||  Violation is count when placing  ||\n       |       |       |       |       |       |       |       |      ||    a piece at an inappropiate     ||\n       |       |       |  @@@  |  @@@  |  \\ /  |       |       |      ||   column (such as out of range    ||\n       |       |       | @@0@@ | @@0@@ |   X   |       |       |      ||  fully filled column), and need   ||\n       |       |       |  @@@  |  @@@  |  / \\  |       |       |      || to restart the move. The player   ||\n       |       |       |       |       |       |       |       |      ||   who violate more than 3 times   ||\n       |       |  \\ /  |  @@@  |  @@@  |  \\ /  |  \\ /  |       |      || who immediately lose the game !   ||\n       |       |   X   | @@0@@ | @@0@@ |   X   |   X   |       |      ||                                   ||\n       |       |  / \\  |  @@@  |  @@@  |  / \\  |  / \\  |       |      ||   There will be a board here to   ||\n       |       |       |       |       |       |       |       |      ||    keep track of all the marks    ||\n       |  \\ /  |  @@@  |  @@@  |  \\ /  |  \\ /  |  @@@  |  \\ /  |      ||                                   ||\n       |   X   | @@0@@ | @@0@@ |   X   |   X   | @@0@@ |   X   |      ||      GOOD LUCK AND HAVE FUN!      ||\n       |  / \\  |  @@@  |  @@@  |  / \\  |  / \\  |  @@@  |  / \\  |      | '---------------------------------' |\n       |_______|_______|_______|_______|_______|_______|_______|       '-----------------------------------' \n\n\n"
 
 	#ask for name
-	input_x_name:	.asciiz "\nINPUT PLAYER X NAME (max 6 characters) :"
-	input_o_name:	.asciiz "\nINPUT PLAYER O NAME (max 6 characters) :"
-	x_name:			.space 6
-	o_name:			.space 6
+	input_x_name:		.asciiz "\nINPUT PLAYER X NAME (max 6 characters) :"
+	input_o_name:		.asciiz "\nINPUT PLAYER O NAME (max 6 characters) :"
+	x_name:			.space 7
+	o_name:			.space 7
 	
 	
 	#init game announcement	
-	popup_game_start:		.asciiz "-----------------------   GAME START!   -----------------------"
+	popup_game_start:	.asciiz "-----------------------   GAME START!   -----------------------"
 	start_as_x:		.asciiz "\nX PLAYER GOES FIRST THIS GAME"
 	start_as_0:		.asciiz "\n0 PLAYER GOES FIRST THIS GAME"
 
@@ -231,8 +231,8 @@ init_game:
     		la $a1, start_as_0
     		j init_game_break
     	
-
     	init_game_break:    	
+    	
     	#Dialog
 	li $v0, 59
 	la $a0, popup_game_start
@@ -358,108 +358,6 @@ game_loop: # a1 = case
 	j game_loop
 
 
-check_winning: # a2 = row_index(1-6) , a3 = column index (1-7) .  
-	addi $sp, $sp, -4
-	sw $ra, 0($sp)
-	
-	# save inserted coordinate
-	move $t3, $a3 #t3 is const a3 
-	move $t2, $a2 #t2 is const a2
-	
-	addi $t0, $0, -4 # t0 is index for row column offset
-	
-	check_vector: # check in two direction and sum the continuous character, total loop 4 times for each 2 vector 
-		addi $t0, $t0, 4
-		beq $t0, 32, end_check_vector # check if t0 is the 9th vector
-		
-		addi $t9, $0, 1 # counter for continuous char
-		
-		# get vector 
-		lw $t4, row_vector($t0) 
-		lw $t5, column_vector($t0)
-		
-		# get the inserted coordinate  
-		move $a3, $t3
-		move $a2, $t2
-		addi $t1, $0, 0
-		
-		check_1_vector: #loop to increase from vector by t1 time 
-			addi $t1, $t1, 1
-			beq $t1, 4, done_check_1_vector # increase the vector maximum 3 time from the origin
-			
-			add $a3, $a3, $t4
-			add $a2, $a2, $t5
-			
-			jal calculate_coordinate
-			
-			lb $t7, board + 0($v1) #get the character
-			lb $t8, X0 + -1($s5) #get the current player character
-			bne $t7, $t8,  done_check_1_vector # if both are different, we jump out the loop vector
-			
-			#both are same char so we increase counter
-			addi $t9, $t9, 1
-			j check_1_vector
-			
-		done_check_1_vector:
-		
-		# now we check the opposite direction
-		addi $t0, $t0, 4 #add 4 because of word
-		
-		# get vector 
-		lw $t4, row_vector($t0) 
-		lw $t5, column_vector($t0)
-		
-		# get the inserted coordinate  
-		move $a3, $t3
-		move $a2, $t2
-		addi $t1, $0, 0
-		
-		check_2_vector: #loop to increase from vector by t1 time 
-			addi $t1, $t1, 1
-			beq $t1, 4, done_check_2_vector # increase the vector maximum 3 time from the origin
-			
-			add $a3, $a3, $t4
-			add $a2, $a2, $t5
-			
-			jal calculate_coordinate
-			
-			lb $t7, board + 0($v1) #get the character
-			lb $t8, X0 + -1($s5) #get the current player character
-			bne $t7, $t8,  done_check_2_vector # if both are different, we jump out the loop vector
-			
-			#both are same char so we increase counter
-			addi $t9, $t9, 1
-			j check_2_vector
-			
-		done_check_2_vector:
-		
-		#now we check if t0 >=4 , if it is , we jump return , else we continue 
-	
-		blt $t9, 4, check_vector #now we check if t9 <4 , if it true we loop the vector again
-		
-		#it is connected 4 so we return v1 = 1 (win)
-		addi $v1, $0, 1	
-	
-		move $a2, $t2 #assign back the input coordinate
-		move $a3, $t3
-	
-		lw $ra, 0($sp)
-		addi $sp, $sp, 4
-	
-		jr $ra	
-		
-	end_check_vector:
-	
-	addi $v1, $0, 0
-		
-	move $a2, $t2 #assign back the input coordinate
-	move $a3, $t3
-		
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
-	
-	jr $ra		
-
 
 win_menu: # a1 = case
 	addi $a2, $0, 0 
@@ -518,7 +416,7 @@ win_menu: # a1 = case
 	
 	#Dialog
 	li $v0, 59
-	move $a1, $a0
+	add $a1, $a0, $0
 	la $a0, popup_game_over
 	syscall
 		
@@ -539,13 +437,12 @@ win_menu: # a1 = case
 
 calculate_coordinate:  # a2 = row_index(1-6) , a3 = column index (1-7)  return v1 = board index of the input coordinate 
 	#save variable 
+	sw $ra, -0($sp)
+	sw $t2, -4($sp)
+	sw $t3, -8($sp)
+	sw $t4, -12($sp)
+	sw $t5, -16($sp)
 	addi $sp, $sp, -20
-	sw $ra, 0($sp)
-	sw $t2, 4($sp)
-	sw $t3, 8($sp)
-	sw $t4, 12($sp)
-	sw $t5, 16($sp)
-	
 	
 	addi $t2, $a2, -1
 	lw $t4, row_offset
@@ -560,23 +457,24 @@ calculate_coordinate:  # a2 = row_index(1-6) , a3 = column index (1-7)  return v
 	add $v1, $v1, $t3
 	
 	#load variable
-	lw $ra, 0($sp)
-	lw $t2, 4($sp)
-	lw $t3, 8($sp)
-	lw $t4, 12($sp)
-	lw $t5, 16($sp)
 	
 	addi $sp, $sp, 20
+	lw $ra, -0($sp)
+	lw $t2, -4($sp)
+	lw $t3, -8($sp)
+	lw $t4, -12($sp)
+	lw $t5, -16($sp)
+	
 	
 	jr $ra
 
 ask_for_name:
+	sw $ra, -0($sp)
+	sw $t0, -4($sp)
+	sw $t1, -8($sp)
+	sw $t2, -12($sp)
+	sw $t3, -16($sp)
     	addi $sp, $sp, -20
-	sw $ra, 0($sp)
-	sw $t0, 4($sp)
-	sw $t1, 8($sp)
-	sw $t2, 12($sp)
-	sw $t3, 16($sp)
     	
     	lw $t3, x_name_index
     	lw $t2, o_name_index
@@ -661,13 +559,14 @@ ask_for_name:
 
     	insert_name_break_o:
     	
-    	lw $ra, 0($sp)
-	lw $t0, 4($sp)
-	lw $t1, 8($sp)
-	lw $t2, 12($sp)
-	lw $t3, 16($sp)
-	
+    	
 	addi $sp, $sp, 20
+    	lw $ra, -0($sp)
+	lw $t0, -4($sp)
+	lw $t1, -8($sp)
+	lw $t2, -12($sp)
+	lw $t3, -16($sp)
+	
 	jr $ra
 print_phase:
 
@@ -692,13 +591,11 @@ print_phase:
 
 
 player_violate: #return v1 = 3 if violated, and decrease 	
-	
+	sw $ra, -0($sp)
+	sw $t0, -4($sp)
+	sw $t1, -8($sp)
+	sw $a1, -12($sp)
 	addi $sp, $sp, -16
-	sw $ra, 0($sp)
-	sw $t0, 4($sp)
-	sw $t1, 8($sp)
-	sw $a1, 	12($sp)
-
 	
 
 	beq $s5, 1 , player_violate_x
@@ -735,35 +632,37 @@ player_violate: #return v1 = 3 if violated, and decrease
 	li $a1, 2
 	syscall
 	
-	lw $ra, 0($sp)
-	lw $t0, 4($sp)
-	lw $t1, 8($sp)
-	lw $a1, 12($sp)
+	
 	addi $sp, $sp, 16
+	lw $ra, -0($sp)
+	lw $t0, -4($sp)
+	lw $t1, -8($sp)
+	lw $a1, -12($sp)
 	
 	jr $ra
 
 	player_violate_lose:
 	addi $v1, $0, 1
 	
-	lw $ra, 0($sp)
-	lw $t0, 4($sp)
-	lw $t1, 8($sp)
-	lw $a1, 12($sp)
+	
 	addi $sp, $sp, 16
+	
+	lw $ra, -0($sp)
+	lw $t0, -4($sp)
+	lw $t1, -8($sp)
+	lw $a1, -12($sp)
 	
 	jr $ra
 
 
 check_undo: # return v1 = 1 if undo, else v1 = 0 so no 
+	sw $ra, -0($sp)
+	sw $t0, -4($sp)
+	sw $t1, -8($sp)
+	sw $t2, -12($sp)
+	sw $t3, -16($sp)
+	sw $a1, -20($sp)
 	addi $sp, $sp, -24
-	sw $ra, 0($sp)
-	sw $t0, 4($sp)
-	sw $t1, 8($sp)
-	sw $t2, 12($sp)
-	sw $t3, 16($sp)
-	sw $a1, 	20($sp)
-
 	
 	jal print_board
 	jal print_phase
@@ -841,13 +740,14 @@ check_undo: # return v1 = 1 if undo, else v1 = 0 so no
 	check_undo_not_undo:
 	li $v1, 0
 	
-	lw $ra, 0($sp)
-	lw $t0, 4($sp)
-	lw $t1, 8($sp)
-	lw $t2, 12($sp)
-	lw $t3, 16($sp)
-	lw $a1, 	20($sp)
 	addi $sp, $sp, 24
+	
+	lw $ra, -0($sp)
+	lw $t0, -4($sp)
+	lw $t1, -8($sp)
+	lw $t2, -12($sp)
+	lw $t3, -16($sp)
+	lw $a1, 	-20($sp)
 	
 	jr $ra
 
@@ -864,13 +764,14 @@ check_undo: # return v1 = 1 if undo, else v1 = 0 so no
 
 	check_undo_is_not_last:
 	
-	lw $ra, 0($sp)
-	lw $t0, 4($sp)
-	lw $t1, 8($sp)
-	lw $t2, 12($sp)
-	lw $t3, 16($sp)
-	lw $a1, 	20($sp)
 	addi $sp, $sp, 24
+	
+	lw $ra, -0($sp)
+	lw $t0, -4($sp)
+	lw $t1, -8($sp)
+	lw $t2, -12($sp)
+	lw $t3, -16($sp)
+	lw $a1, -20($sp)
 	
 	jr $ra
 	
@@ -896,8 +797,8 @@ change_player:
 	jr $ra
 
 print_board: # the board is just a very long string
-	addi $sp , $sp, -4
 	sw $ra, 0($sp)
+	addi $sp , $sp, -4
 	
 	jal flush_console
 	
@@ -905,20 +806,20 @@ print_board: # the board is just a very long string
 	la $a0,board
 	syscall
 	
-	lw $ra, 0($sp)
+	
 	addi $sp, $sp, 4
+	lw $ra, 0($sp)
 	jr $ra
 
 
 insert: #  a2 = row_index(1-6) , a3 = column index (1-7)  . 
 	#Void : Find middle position of the index, then replace with text shape X (s5 = 1), O (s5 = 2) 
 	
-	addi $sp, $sp, -4
 	sw $ra, 0($sp)
+	addi $sp, $sp, -4
 	
 	jal calculate_coordinate
-	
-	
+		
 	#line offset
 	lw $t7, line_offset 
 	add $t6 , $v1, $t7 # bottom line
@@ -959,11 +860,13 @@ insert: #  a2 = row_index(1-6) , a3 = column index (1-7)  .
 		sb $t0,  board+-1($t7)
 		sb $t0,  board+0($t7)
 		sb $t0,  board+1($t7)
+		
 		sb $t0,  board+-2($v1)
 		sb $t0,  board+-1($v1)
 		sb $t1,  board+0($v1)
 		sb $t0,  board+1($v1)
 		sb $t0,  board+2($v1)
+		
 		sb $t0,  board+-1($t6)
 		sb $t0,  board+0($t6)
 		sb $t0,  board+1($t6)
@@ -977,18 +880,17 @@ insert: #  a2 = row_index(1-6) , a3 = column index (1-7)  .
 	
 	insert_return:
 	
-	lw $ra, 0($sp)
 	addi $sp, $sp, 4
+	lw $ra, 0($sp)
 	
 	jr $ra
 
 clear_slot:
 	#  a2 = row_index(1-6) , a3 = column index (1-7) . Void : Find middle position of the index, then replace with text shape X
-	
-	
-	addi $sp, $sp, -4
+
 	sw $ra, 0($sp)
-	
+	addi $sp, $sp, -4
+		
 	jal calculate_coordinate
 	
 	# t0 = 40 is ascii for 'space'
@@ -1020,10 +922,116 @@ clear_slot:
 	sb $t0,  board+2($t7)
 
 
-	lw $ra, 0($sp)
 	addi $sp, $sp, 4
+	lw $ra, 0($sp)
 	
 	jr $ra		
+
+
+check_winning: # a2 = row_index(1-6) , a3 = column index (1-7) .  
+	sw $ra, 0($sp)
+	addi $sp, $sp, -4
+	
+	# save inserted coordinate
+	add $t3, $a3, $0 #t3 is const a3 
+	add $t2, $a2, $0 #t2 is const a2
+	
+	add $t0, $0, $0 # t0 is index for row column offset
+	
+	check_vector: # check in two direction and sum the continuous character, total loop 4 times for each 2 vector 
+		beq $t0, 32, end_check_vector # check if t0 is the 9th vector
+		
+		addi $t9, $0, 1 # counter for continuous char
+		
+		# get the inserted coordinate  
+		add $a3, $t3, $0
+		add $a2, $t2, $0
+		addi $t1, $0, 1
+		
+		# get vector 
+		lw $t4, row_vector($t0) 
+		lw $t5, column_vector($t0)
+		
+		check_1_vector: #loop to increase from vector by t1 time 
+			beq $t1, 4, done_check_1_vector # increase the vector maximum 3 time from the origin
+			
+			add $a3, $a3, $t4
+			add $a2, $a2, $t5
+			addi $t1, $t1, 1
+			
+			jal calculate_coordinate
+			
+			lb $t7, board + 0($v1) #get the character
+			lb $t8, X0 + -1($s5) #get the current player character
+			bne $t7, $t8,  done_check_1_vector # if both are different, we jump out the loop vector
+			
+			#both are same char so we increase counter
+			addi $t9, $t9, 1
+			j check_1_vector
+			
+		done_check_1_vector:
+		
+		# now we check the opposite direction
+		addi $t0, $t0, 4 #add 4 because of word
+		
+		# get the inserted coordinate  
+		add $a3, $t3, $0
+		add $a2, $t2, $0
+		addi $t1, $0, 1
+		
+		# get vector 
+		lw $t4, row_vector($t0) 
+		lw $t5, column_vector($t0)
+		
+		check_2_vector: #loop to increase from vector by t1 time 
+			beq $t1, 4, done_check_2_vector # increase the vector maximum 3 time from the origin
+			
+			add $a3, $a3, $t4
+			add $a2, $a2, $t5
+			addi $t1, $t1, 1
+			
+			jal calculate_coordinate
+			
+			lb $t7, board + 0($v1) #get the character
+			lb $t8, X0 + -1($s5) #get the current player character
+			bne $t7, $t8,  done_check_2_vector # if both are different, we jump out the loop vector
+			
+			#both are same char so we increase counter
+			addi $t9, $t9, 1
+			j check_2_vector
+			
+		done_check_2_vector:
+		
+		#now we check if t0 >=4 , if it is , we jump return , else we continue 
+		addi $t0, $t0, 4 #increase t0 by 4 incase not ưinning
+		blt $t9, 4, check_vector #now we check if t9 <4 , if it true we loop the vector again
+		
+	
+	#it is connected 4 so we return v1 = 1 (win)
+	addi $v1, $0, 1	
+	
+	add $a2, $t2, $0 #assign back the input coordinate
+	add $a3, $t3, $0
+	
+	addi $sp, $sp, 4	
+	lw $ra, 0($sp)
+
+	jr $ra	
+		
+	end_check_vector:
+	
+	addi $v1, $0, 0
+		
+	add $a2, $t2, $0 #assign back the input coordinate
+	add $a3, $t3, $0
+		
+	
+	addi $sp, $sp, 4
+	lw $ra, 0($sp)
+	
+	jr $ra		
+
+
 
 	
 flush_console: # Use to push all printed messages out of the console space.
